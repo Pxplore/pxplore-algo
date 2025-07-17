@@ -1,0 +1,63 @@
+import logging
+import json
+from openai import OpenAI
+from config import CLAUDE_API_KEY, CLAUDE_BASE_URL
+
+logger = logging.getLogger(__name__)
+
+class ClaudeClient:
+
+    client = OpenAI(
+        api_key=CLAUDE_API_KEY,
+        base_url=CLAUDE_BASE_URL
+    )
+
+    @classmethod
+    def call(cls, model, messages, **kwargs):
+        """
+        Generic method to call Claude API, handling both streaming and non-streaming cases
+        
+        Args:
+            model: Model name to use
+            messages: Array of message objects
+            **kwargs: Additional parameters like temperature, max_tokens, etc.
+            
+        Returns:
+            For streaming=True: Returns the stream object
+            For streaming=False: Returns the response content as a string
+        """
+        try:
+            # Check if streaming is enabled
+            stream = kwargs.get('stream', False)
+            
+            if stream:
+                # For streaming, return the stream object directly
+                # The caller will iterate through it
+                logger.info(f"STARTING STREAM REQUEST: model={model}, stream=True")
+                
+                return cls.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    **kwargs
+                )
+            else:
+                # For non-streaming, return the response content
+                logger.info(f"Starting non-streaming request to Claude API with model {model}")
+                
+                response = cls.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    **kwargs
+                )
+                
+                if hasattr(response, 'choices') and response.choices:
+                    content = response.choices[0].message.content
+                    logger.info(f"Received complete response: {len(content)} characters")
+                    return content
+                    
+                logger.warning("Received empty response from Claude API")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"Error in Claude API call: {str(e)}")
+            raise e

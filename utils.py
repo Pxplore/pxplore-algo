@@ -8,8 +8,6 @@ from colorama import Fore, Style, init
 
 from config import LOG
 
-preclass_context_size = 3
-
 now = datetime.now
 
 def get_logger(__name__, __file__):

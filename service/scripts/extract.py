@@ -15,6 +15,9 @@ from pptx.util import Inches
 import pandas as pd
 import json
 import shutil
+import subprocess
+from pathlib import Path
+
 def find_and_process_xlsx(ppt_path, start_page, end_page, output_dir):
     """
     在PPT文件同一路径下查找同名的xlsx文件并输出内容到终端
@@ -136,7 +139,7 @@ def extract_slides(input_path, start_page, end_page, output_path=None):
     try:
         prs.save(output_path)
         ppt_output = str(output_path)
-        print(f"💾 已保存提取的幻灯片到: {ppt_output}")
+
     except Exception as e:
         raise ValueError(f"保存文件失败: {e}")
     
