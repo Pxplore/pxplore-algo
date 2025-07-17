@@ -1,0 +1,69 @@
+from pathlib import Path
+import json
+import argparse
+from service.llm.openai_client import OpenAI_Client
+
+BASE_DIR = Path(__file__).parent
+
+class TransitionComposer:
+
+	def __init__(self, src_scripts: str, dst_scripts: str) -> None:
+		self.src_scripts = src_scripts
+		self.dst_scripts = dst_scripts
+
+		self.transition_prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
+		with open(self.transition_prompt_path, "r", encoding="utf-8") as f:
+			self.prompt_script = f.read()
+		
+		self.prompt_script = self.prompt_script.replace("[src_scripts]", str(src_scripts)).replace("[dst_scripts]", str(dst_scripts))
+		
+		self.system_prompt = [
+			{
+				"role": "system",
+				"content": [
+					{"type": "text", "text": self.prompt_script},
+				],
+			}
+		]
+
+	def generate(self):
+		# response = OpenAI_Client.call(
+		# 	model="gpt-4o",
+		# 	messages=self.system_prompt
+		# )
+		response = {
+			"start_speech": "欢迎进入一个全新的模块！我们将从群体心理中解放出来，转向探讨个人投资行为背后的内心世界。让我们一起看看，投资行为如何反映出我们更广泛的生活心态。",
+			"new_scripts": [
+				"投资行为在很大程度上反映了一个人的生活态度。非理性投资背后往往隐藏着四种不健康的心态：急功近利、只关注短期、不规划长远以及缺乏耐心。这些心态不仅影响投资决策，还可能波及生活的各个方面。急功近利的人追求快速回报，忽略长期积累；只看短期的人容易被眼前利益蒙蔽，忽略长远规划；不看长远的人难以坚持长期计划；缺乏耐心的人在困难面前容易放弃。这种心态在投资中尤为明显，但实际上折射了更广泛的生活态度。调整这些心态不仅能提高投资收益，还有助于培养健康的生活心态。",
+				"要实现理性投资，心态的更新是关键。我们需要培养三种核心心态：平和、忍耐和长远规划。平和的心态帮助我们在市场波动时保持冷静，不被短期涨跌干扰；忍耐的品质使我们能够坚持既定策略，耐心等待价值实现；长远规划引导我们关注长期目标，而非短期波动。三者相辅相成，共同构建理性投资的基础。培养这些心态需要时间以及持续的自我反思和实践，但这种努力不仅提升投资，也改善生活质量。",
+				"从理性投资的角度，我们能得到如何过好人生的启示。首先，不能只看短期，而要有长远眼光。就像投资需要长期视角一样，人生决策也应关注长远影响，而非短视的眼前利益。用长期视角对抗短期挑战，有助于我们在人生的起伏中保持方向感与稳定性。其次，不仅要看利益，还需防范风险。成功人生在于抓住机会，同时规避重大风险。坚持做正确的事，不选择轻松的路，这种态度适用于投资和生活的方方面面。",
+				"想象这样的情景：你的朋友采用理性投资方式却面临40%的亏损时，你会怎么安慰他呢？这样的情况考验的，不仅是我们对理性投资的理解，更是对投资心理的把握。你或许会对他说，短期亏损是投资过程的常态，即便是优秀策略也有回撤；市场短期由情绪驱动，长期由价值决定，只要坚持正确方法，终将获得回报；历史数据表明，理性策略低谷后常能强势反弹；最重要的是，提醒他不要因短期波动而放弃长期目标。这种鼓励不仅帮助朋友度过难关，也强化自己的投资信念。",
+				"相反，如果朋友因追逐热门股票而赚了20%，你该如何劝其转向理性投资呢？这同样是个挑战，因为人们在成功时不愿改变策略。你可能会先祝贺他的短期成功，但也提醒这类收益未必可持续；举例说明追逐热门股的风险和损失；阐述理性投资的长期优势和稳定回报；建议他分散投资，逐步转向更理性的方式。关键是帮助朋友认识，投资成功应关注长期稳定，而非短期得失。",
+				"其实，这位'朋友'就是你自己！这个问题促使我们反思在投资中如何面对亏损或短期收益。关键在于，对待自己的投资决策和结果，我们能否在亏损时保持信心，获利时保持理智。这种自我对话和心态调整是投资成功的关键。认识到自己是投资中的'朋友'，意味着我们需学会客观对待自己的投资，给予合理的建议和鼓励，而非被情绪主导。",
+				"在结束今天的讨论前，我邀请你进行一次深入反思：如何做到理性投资，避免主观干预？这不仅是理论问题，更是实践挑战。你可以思考如何设定并严格遵循明确的投资规则？如何在市场波动时控制情绪？是否愿意记录投资日志，帮助客观分析？是否可利用自动化工具减少人为干预？愿意与志同道合者组建小组，互相监督和鼓励？记住，理性投资不仅是方法，更是养成习惯和修养的过程，需长期坚持。将今天的讨论化为行动，在这条路上不断成长。"
+			],
+			"end_speech": "感谢你今天的参与和思考，希望通过这个模块的学习，你收获了对投资和生活更全面的认识。保持理性的心态，与我们下次继续愉快的探讨再见。"
+		}
+		return response
+
+
+if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser()
+	parser.add_argument('src_path', help='输入JSON文件路径') 
+	parser.add_argument('dst_path', help='输入JSON文件路径') 
+	args = parser.parse_args()
+	
+	with open(args.src_path, "r", encoding="utf-8") as f:
+		src_scripts = [ item["content"] for item in json.load(f)["scripts"]]
+	with open(args.dst_path, "r", encoding="utf-8") as f:
+		dst_scripts = [ item["content"] for item in json.load(f)["scripts"]]
+
+	results = TransitionComposer(src_scripts=src_scripts, dst_scripts=dst_scripts).generate()
+	output_path = str(
+		BASE_DIR / "output" / (
+			"output_" + Path(args.src_path).stem + "_" + Path(args.dst_path).stem + ".json"
+		)
+	)
+	with open(output_path, "w", encoding="utf-8") as f:
+		json.dump(results, f, ensure_ascii=False)
