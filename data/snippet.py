@@ -3,6 +3,8 @@ import os
 from pymongo import MongoClient
 from config import MONGO
 from bson.objectid import ObjectId
+from typing import Dict, Any
+
 collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.lecture_snippets
 
 def add_snippet(snippet):
@@ -26,6 +28,10 @@ def get_snippets_by_module(module_id):
 
 def add_label(snippet_id, label):
     collection.update_one({"_id": snippet_id}, {"$set": {"label": label}})
+
+def parse_snippet(snippet: Dict[str, Any]) -> str:
+	content_list = [item['children'][1]['script'].replace('\n', '').strip() for item in snippet['children']]
+	return "\n".join(content_list)
 
 def parse_data(course, chapter, module):
     snippet_data = []

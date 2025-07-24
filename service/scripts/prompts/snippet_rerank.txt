@@ -2,7 +2,7 @@
 
 你的决策依据包括：
 - 当前教学上下文（content）：表示学生刚学习或正在学习的内容；
-- 学生画像（user_profile）：包括年级、专业、兴趣、交互历史等；
+- 学生画像（student_profile）：包括年级、专业、兴趣、交互历史等；
 - 若干候选内容片段（candidates）：由系统根据内容与语义检索得到，包含若干字段如标题、关键字、Bloom等级、内容摘要等。
 
 请你综合分析每个候选片段的内容与结构，选择**最适合当前学生和当前教学上下文**的那一条。评估的维度包括但不限于：
@@ -18,8 +18,8 @@
 当前教学内容 content：
 {content}
 
-学生画像 user_profile（JSON 格式）：
-{user_profile}
+学生画像 student_profile（JSON 格式）：
+{student_profile}
 
 候选片段 candidates（JSON 数组）：
 {candidates}

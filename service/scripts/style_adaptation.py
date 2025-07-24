@@ -1,47 +1,97 @@
 from pathlib import Path
-import json
-from service.llm.openai import OPENAI_SERVICE
-from data.snippet import get_snippet
+from pymongo import MongoClient
 from typing import Dict, Any
+import uuid
+import asyncio
+from datetime import datetime
+from service.llm.openai import OPENAI_SERVICE
+from data.snippet import get_snippet, parse_snippet
+from config import MONGO
 
 BASE_DIR = Path(__file__).parent
 
+STATUS_PENDING = "pending"
+STATUS_COMPLETED = "completed"
+STATUS_FAILED = "failed"
+
 class StyleAdapter:
 
-	def __init__(self, src_snippet: str, dst_snippet: str) -> None:
-		self.src_scripts = self.parse_snippet(src_snippet)
-		self.dst_scripts = self.parse_snippet(dst_snippet)
+	def __init__(self) -> None:
+		prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
+		self.prompt_text = open(prompt_path, "r", encoding="utf-8").read()
+		self.tasks_collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.tasks
 
-		self.style_adaptation_prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
-		with open(self.style_adaptation_prompt_path, "r", encoding="utf-8") as f:
-			prompt_text = f.read()
+	def process_adaptation(self, task_id: str, src_snippet: Dict[str, Any], dst_snippet: Dict[str, Any]):
+		try:
+			src_scripts = parse_snippet(src_snippet)
+			dst_scripts = parse_snippet(dst_snippet)
+
+			prompt_text = self.prompt_text.replace("{src_scripts}", src_scripts).replace("{dst_scripts}", dst_scripts)
+
+			job_id = OPENAI_SERVICE.trigger(
+				parent_service="Pxplore",
+				parent_job_id=None,
+				use_cache=True,
+				model="gpt-4o",
+				messages=[
+					{
+						"role": "system",
+						"content": prompt_text
+					}
+				]
+			)
+			response = OPENAI_SERVICE.get_response_sync(job_id)
+			response = OPENAI_SERVICE.parse_json_response(response)
+
+			self.tasks_collection.update_one(
+				{"task_id": task_id},
+				{"$set": {"status": STATUS_COMPLETED, "adaptation_result": response}}
+			)
+
 		
-		self.system_prompt = [
-			{
-				"role": "system",
-				"content": prompt_text.replace("{src_scripts}", self.src_scripts).replace("{dst_scripts}", self.dst_scripts)
-			}
-		]
+		except Exception as e:
+			self.tasks_collection.update_one(
+				{"task_id": task_id},
+				{"$set": {"status": STATUS_FAILED, "error": str(e)}}
+			)
+	
+	def run(self, src_snippet: Dict[str, Any], dst_snippet: Dict[str, Any]):
 
-	def parse_snippet(self, snippet: Dict[str, Any]) -> str:
-		content_list = [item['children'][1]['script'].replace('\n', '').strip() for item in snippet['children']]
-		return "\n".join(content_list)
+		task_id = str(uuid.uuid4())
 
-	def generate(self):
-		job_id = OPENAI_SERVICE.trigger(
-			parent_service="Pxplore",
-			parent_job_id=None,
-			use_cache=True,
-			model="gpt-4o",
-			messages=self.system_prompt
-		)
-		response = OPENAI_SERVICE.get_response_sync(job_id)
-		response = json.loads(response.replace("```json", "").replace("```", "")) if response.startswith("```json") else json.loads(response)
-		return response
+		self.tasks_collection.insert_one({
+			"task_id": task_id,
+			"status": STATUS_PENDING,
+			"created_at": datetime.now(),
+			"updated_at": datetime.now(),	
+			"src_snippet_id": src_snippet["_id"],
+			"dst_snippet_id": dst_snippet["_id"],
+			"adaptation_result": None,
+			"error": None
+		})
+
+		asyncio.create_task(self.process_adaptation(task_id, src_snippet, dst_snippet))
+
+		return task_id
+	
+	def get_adaptation_task(self, task_id: str) -> Dict[str, Any]:
+		task = self.tasks_collection.find_one({"task_id": task_id})
+		if not task:
+			return {"status": STATUS_FAILED, "reason": f"Task {task_id} not found."}
+		
+		return {
+			"id": task["task_id"],
+			"status": task["status"],
+			"created_at": task["created_at"].isoformat() if isinstance(task["created_at"], datetime) else task["created_at"],
+			"updated_at": task["updated_at"].isoformat() if isinstance(task["updated_at"], datetime) else task["updated_at"],
+			"error": task.get("error"),
+			"adaptation_result": task.get("adaptation_result")
+		}
+
 
 if __name__ == "__main__":
 	src_snippet = get_snippet("68808c0001fa9003100443f4")
 	dst_snippet = get_snippet("68808c0001fa9003100443fa")
 
-	results = StyleAdapter(src_snippet=src_snippet, dst_snippet=dst_snippet).generate()
+	results = StyleAdapter().run(src_snippet, dst_snippet)
 	print(results)

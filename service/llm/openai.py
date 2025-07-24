@@ -9,6 +9,8 @@ from retry import retry
 from utils import get_channel, now, get_logger
 from service.llm.base import BASE_LLM_CACHE, NO_CACHE_YET
 from config import MONGO, LLM
+import json
+import ast
 
 class OPENAI(BASE_LLM_CACHE):
 	"""
@@ -240,6 +242,18 @@ class OPENAI_SERVICE:
 		OPENAI_SERVICE.logger.error(f"Retrieving Response From Job {job_id} Timed Out After {timeout} Seconds")
 		return None
 	
+	@staticmethod
+	def parse_json_response(response):
+		response = response.strip()
+		if response.startswith("```json"):
+			response = response.replace("```json", "").replace("```", "").strip()
+		elif response.startswith("```"):
+			response = response.replace("```", "").strip()
+		try:
+			return json.loads(response)
+		except json.JSONDecodeError:
+			return ast.literal_eval(response)
+
 if __name__=="__main__":
 	OPENAI_SERVICE.logger.warning("STARTING LLM SERVICE")
 	OPENAI_SERVICE.launch_worker()
