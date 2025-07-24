@@ -97,14 +97,16 @@ class LLM:
 class EMBED:
 	MODEL = "baai/bge-large-zh-v1.5"
 	PROTOCOL = "http"
-	HOST = "0.0.0.0" #  the host of the embed model
-	PORT = 6633
-      
+	HOST = "localhost" #  the host of the embed model
+	PORT = 33388
+
 class QDRANT:
 	COLLECTION = "pxplore"
-	HOST = "0.0.0.0" #  the host of the qdrant
-	PORT = 6634
-	GRPC_PORT = 6635
+	HOST = "localhost" #  the host of the qdrant
+	PORT = 33366
+	GRPC_PORT = 33377
+	TOP_K = 5
+	ALPHA = 0.2
 
 class LOG:
 	LEVEL=args.log

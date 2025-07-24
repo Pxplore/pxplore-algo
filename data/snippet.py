@@ -2,7 +2,7 @@ import json
 import os
 from pymongo import MongoClient
 from config import MONGO
-
+from bson.objectid import ObjectId
 collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.lecture_snippets
 
 def add_snippet(snippet):
@@ -10,7 +10,7 @@ def add_snippet(snippet):
     return _id
 
 def get_snippet(snippet_id):
-    return collection.find_one({"_id": snippet_id})
+    return collection.find_one({"_id": ObjectId(snippet_id)})
 
 def get_all_snippets():
     return list(collection.find({}))

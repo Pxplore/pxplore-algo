@@ -19,10 +19,10 @@
 ## 输入内容
 
 ### 历史内容
-[src_scripts]
+{src_scripts}
 
 ### 探索内容
-[dst_scripts]
+{dst_scripts}
 
 ## 输出格式（JSON）
 {
