@@ -44,9 +44,6 @@ def parse_data(input_path: str) -> List[Dict[str, Any]]:
             "content": full_text,
             "title": title,
             "metadata": {
-                "course_name": record.get("course_name"),
-                "chapter_name": record.get("chapter_name"),
-                "module_name": record.get("module_name"),
                 "summary": record.get("label", {}).get("summary"),
                 "keywords_tags": record.get("label", {}).get("keywords_tags"),
                 "bloom_level": record.get("label", {}).get("bloom_level")
