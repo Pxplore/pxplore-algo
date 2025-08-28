@@ -45,15 +45,15 @@ class DenseEmbedding(BaseEmbedding):
         return DenseEmbedding(model_name=model, embedding_url=embedding_url)
 
     def _make_embedding_request(self, 
-                               text: Union[str, List[str]], 
-                               timeout: float = 60 * 100, 
-                               retries: int = 3, 
-                               backoff_factor: float = 1.0) -> Any:
+                                text: Union[str, List[str]], 
+                                timeout: float = 10.0,  
+                                retries: int = 3, 
+                                backoff_factor: float = 1.0) -> Any:
         """Make an embedding request to the embedding service.
         
         Args:
             text: Text or list of texts to embed
-            timeout: Request timeout in seconds
+            timeout: Request timeout in seconds (increased to 120s for model loading)
             retries: Number of retries on failure
             backoff_factor: Backoff factor for retries
             
@@ -78,14 +78,19 @@ class DenseEmbedding(BaseEmbedding):
                             'return_dense': True,
                             'return_sparse': False,
                         }, 
-                        timeout=10  # Reduced timeout to prevent hanging
+                        timeout=timeout  # Use the passed timeout parameter
                     )
                     r.raise_for_status()
                     
+                    response_data = r.json()
+                    if response_data.get('message') is not None:
+                        logger.error(f"Embedding service returned error: {response_data.get('message')}")
+                        raise Exception(f"Embedding service error: {response_data.get('message')}")
+                    
                     if is_batch:
-                        return [i['dense_embed'] for i in r.json()['data']]
+                        return [i['dense_embed'] for i in response_data['data']]
                     else:
-                        return r.json()['data']['dense_embed']
+                        return response_data['data']['dense_embed']
                         
             except (httpx.RequestError, httpx.TimeoutException, httpx.ConnectError) as e:
                 attempt += 1
@@ -96,39 +101,9 @@ class DenseEmbedding(BaseEmbedding):
                 else:
                     logger.error(f"All {retries} embedding request attempts failed: {str(e)}")
                     logger.error(f"Embedding service at {self.embedding_url} appears to be unavailable")
-                    # Return mock embeddings as fallback
-                    logger.warning("Falling back to mock embeddings")
-                    return self._create_mock_embedding(text, is_batch)
+                    raise e
             except Exception as e:
-                logger.error(f"Unexpected error in embedding request: {str(e)}")
-                # Return mock embeddings as fallback
-                logger.warning("Falling back to mock embeddings due to unexpected error")
-                return self._create_mock_embedding(text, is_batch)
-
-    def _create_mock_embedding(self, text: Union[str, List[str]], is_batch: bool = False) -> Union[List[float], List[List[float]]]:
-        """Create mock embeddings when the real service is unavailable."""
-        import hashlib
-        
-        def create_single_embedding(single_text: str) -> List[float]:
-            # Create a deterministic hash-based embedding
-            text_hash = hashlib.md5(single_text.encode()).hexdigest()
-            embedding = []
-            embedding_dim = 1024
-            
-            for i in range(embedding_dim):
-                # Use different parts of the hash to create varied values
-                hash_segment = text_hash[(i * 2) % len(text_hash):(i * 2 + 2) % len(text_hash) + 1]
-                if hash_segment:
-                    value = int(hash_segment, 16) / 255.0 - 0.5  # Normalize to [-0.5, 0.5]
-                else:
-                    value = 0.0
-                embedding.append(value)
-            return embedding
-        
-        if is_batch:
-            return [create_single_embedding(t) for t in text]
-        else:
-            return create_single_embedding(text)
+                raise e
 
     def request_bge_embedding(self, text: str) -> List[float]:
         """Request embedding for a single text.
@@ -175,10 +150,13 @@ class DenseEmbedding(BaseEmbedding):
                     'return_dense': True,
                     'return_sparse': False,
                 },
-                timeout=60 * 100
+                timeout=120.0  # Increased timeout for async requests too
             )
             r.raise_for_status()
-            return r.json()['data']['dense_embed']
+            response_data = r.json()
+            if response_data.get('message') is not None:
+                raise Exception(f"Embedding service error: {response_data.get('message')}")
+            return response_data['data']['dense_embed']
 
     async def _aget_query_embedding(self, query: str) -> Embedding:
         """Get query embedding asynchronously."""
@@ -196,7 +174,10 @@ class DenseEmbedding(BaseEmbedding):
                     'return_dense': True,
                     'return_sparse': False,
                 },
-                timeout=60 * 100
+                timeout=120.0  # Increased timeout for async requests too
             )
             r.raise_for_status()
-            return [i['dense_embed'] for i in r.json()['data']]
+            response_data = r.json()
+            if response_data.get('message') is not None:
+                raise Exception(f"Embedding service error: {response_data.get('message')}")
+            return [i['dense_embed'] for i in response_data['data']]
