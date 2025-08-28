@@ -1,12 +1,10 @@
 from pathlib import Path
-from pymongo import MongoClient
 from typing import Dict, Any
-import uuid
 import asyncio
 from datetime import datetime
 from service.llm.openai import OPENAI_SERVICE
 from data.snippet import get_snippet, parse_snippet
-from config import MONGO
+from data.task import add_task, get_task, update_task
 
 BASE_DIR = Path(__file__).parent
 
@@ -19,14 +17,23 @@ class StyleAdapter:
 	def __init__(self) -> None:
 		prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
 		self.prompt_text = open(prompt_path, "r", encoding="utf-8").read()
-		self.tasks_collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.tasks
 
-	def process_adaptation(self, task_id: str, src_snippet: Dict[str, Any], dst_snippet: Dict[str, Any]):
+	def handle_prompt(self, interaction_history: str, recommend_id: str, recommend_reason: str) -> str:
+		recommend_snippet = get_snippet(recommend_id)
+		recommend_content = parse_snippet(recommend_snippet)
+		return f'''### 历史内容
+{interaction_history}
+
+### 推荐内容
+{recommend_content}
+
+### 推荐理由
+{recommend_reason}
+'''
+
+	async def process_adaptation(self, task_id: str, student_profile: Dict[str, Any], interaction_history: str, recommend_id: str, recommend_reason: str):
 		try:
-			src_scripts = parse_snippet(src_snippet)
-			dst_scripts = parse_snippet(dst_snippet)
-
-			prompt_text = self.prompt_text.replace("{src_scripts}", src_scripts).replace("{dst_scripts}", dst_scripts)
+			user_prompt = self.handle_prompt(interaction_history, recommend_id, recommend_reason)
 
 			job_id = OPENAI_SERVICE.trigger(
 				parent_service="Pxplore",
@@ -34,56 +41,43 @@ class StyleAdapter:
 				use_cache=True,
 				model="gpt-4o",
 				messages=[
-					{
-						"role": "system",
-						"content": prompt_text
-					}
+					{"role": "system", "content": self.prompt_text},
+					{"role": "user", "content": user_prompt}
 				]
 			)
 			response = OPENAI_SERVICE.get_response_sync(job_id)
 			response = OPENAI_SERVICE.parse_json_response(response)
 
-			self.tasks_collection.update_one(
-				{"task_id": task_id},
-				{"$set": {"status": STATUS_COMPLETED, "adaptation_result": response}}
-			)
-
+			update_task(task_id, {"status": STATUS_COMPLETED, "adaptation_result": response})
 		
 		except Exception as e:
-			self.tasks_collection.update_one(
-				{"task_id": task_id},
-				{"$set": {"status": STATUS_FAILED, "error": str(e)}}
-			)
+			update_task(task_id, {"status": STATUS_FAILED, "error": str(e)})
 	
-	def run(self, src_snippet: Dict[str, Any], dst_snippet: Dict[str, Any]):
+	async def run(self, student_profile: Dict[str, Any], interaction_history: str, title: str, recommend_id: str, recommend_reason: str) -> str:
 
-		task_id = str(uuid.uuid4())
-
-		self.tasks_collection.insert_one({
-			"task_id": task_id,
+		task_id = add_task({
 			"status": STATUS_PENDING,
-			"created_at": datetime.now(),
-			"updated_at": datetime.now(),	
-			"src_snippet_id": src_snippet["_id"],
-			"dst_snippet_id": dst_snippet["_id"],
+			"task": "style_adaptation",
+			"student_profile": student_profile,
+			"interaction_history": interaction_history,
+			"title": title,
+			"recommend_id": recommend_id,
+			"recommend_reason": recommend_reason,
 			"adaptation_result": None,
 			"error": None
 		})
 
-		asyncio.create_task(self.process_adaptation(task_id, src_snippet, dst_snippet))
+		asyncio.create_task(self.process_adaptation(task_id, student_profile, interaction_history, recommend_id, recommend_reason))
 
-		return task_id
+		return str(task_id)
 	
-	def get_adaptation_task(self, task_id: str) -> Dict[str, Any]:
-		task = self.tasks_collection.find_one({"task_id": task_id})
+	async def get_adaptation_task(self, task_id: str) -> Dict[str, Any]:
+		task = get_task(task_id)
 		if not task:
-			return {"status": STATUS_FAILED, "reason": f"Task {task_id} not found."}
+			return {"status": STATUS_FAILED, "error": f"Task {task_id} not found."}
 		
 		return {
-			"id": task["task_id"],
 			"status": task["status"],
-			"created_at": task["created_at"].isoformat() if isinstance(task["created_at"], datetime) else task["created_at"],
-			"updated_at": task["updated_at"].isoformat() if isinstance(task["updated_at"], datetime) else task["updated_at"],
 			"error": task.get("error"),
 			"adaptation_result": task.get("adaptation_result")
 		}

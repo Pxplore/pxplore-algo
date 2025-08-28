@@ -1,7 +1,4 @@
-import json
-import argparse
 from typing import List, Dict
-import numpy as np
 from qdrant_client import QdrantClient
 from service.utils.dense_embedding import DenseEmbedding
 from rank_bm25 import BM25Okapi
@@ -21,7 +18,8 @@ class HybridRetriever:
         self.qdrant = QdrantClient(
             url=f"http://{QDRANT.HOST}",
             port=QDRANT.PORT,
-            grpc_port=QDRANT.GRPC_PORT
+            grpc_port=QDRANT.GRPC_PORT,
+            check_compatibility=False
         )
 
         self.payloads, self.corpus_texts = self._load_corpus_from_qdrant()
@@ -49,15 +47,15 @@ class HybridRetriever:
         print(f"→ Loaded {len(payloads)} documents.")
         return payloads, texts
 
-    def search(self, query: str) -> List[Dict]:
-        print(f"🔍 Searching for: {query}")
+    def search(self, query: str, title: str = None) -> List[Dict]:
+        print(f"🔍 Searching for: {query[:20]}...({len(query)})...")
         query_embedding = self.embedder._get_text_embedding(query)
 
         # Step 1: dense retrieval from Qdrant
         dense_hits = self.qdrant.search(
             collection_name=QDRANT.COLLECTION,
             query_vector=query_embedding,
-            limit=self.top_k * 2,
+            limit=self.top_k * 5,  # 拉取更多候选，便于后续过滤
             with_payload=True
         )
 
@@ -80,19 +78,30 @@ class HybridRetriever:
             dense_score = dense_scores.get(text, 0)
             hybrid_scores[text] = self.alpha * bm25_score + (1 - self.alpha) * dense_score
 
-        # Step 4: sort by hybrid score
-        sorted_texts = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)[:self.top_k]
+        # Step 4: sort by hybrid score, collect更多候选
+        sorted_texts = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)[:self.top_k * 5]
 
-        # Return top-k payloads
+        # Step 5: 过滤掉key_snippet，最后只保留top_k个
         results = []
         for text, score in sorted_texts:
             idx = self.corpus_texts.index(text)
             payload = self.payloads[idx]
+
+            if title and payload.get("title") == title:
+                print(f"⏭️ Skipping key snippet: {title}")
+                continue
+
+            if "content" in payload:
+                del payload["content"]
+
             results.append({
                 "content": text,
                 "score": round(score, 4),
                 "metadata": payload
             })
+            
+            if len(results) >= self.top_k:
+                break
 
         return results
 

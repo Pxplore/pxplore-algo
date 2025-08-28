@@ -105,7 +105,7 @@ class QDRANT:
 	HOST = "localhost" #  the host of the qdrant
 	PORT = 33366
 	GRPC_PORT = 33377
-	TOP_K = 5
+	TOP_K = 10
 	ALPHA = 0.2
 
 class LOG:

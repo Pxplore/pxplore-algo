@@ -11,6 +11,7 @@ from service.llm.base import BASE_LLM_CACHE, NO_CACHE_YET
 from config import MONGO, LLM
 import json
 import ast
+import re
 
 class OPENAI(BASE_LLM_CACHE):
 	"""
@@ -243,16 +244,115 @@ class OPENAI_SERVICE:
 		return None
 	
 	@staticmethod
-	def parse_json_response(response):
-		response = response.strip()
-		if response.startswith("```json"):
-			response = response.replace("```json", "").replace("```", "").strip()
-		elif response.startswith("```"):
-			response = response.replace("```", "").strip()
+	def parse_json_response(response: str):
+		def _strip_code_fences(s: str) -> str:
+			s = s.strip()
+			if s.startswith("```json"):
+				s = s[len("```json"):].strip()
+				return s[:-3].strip() if s.endswith("```") else s
+			if s.startswith("```"):
+				s = s[len("```"):].strip()
+				return s[:-3].strip() if s.endswith("```") else s
+			return s
+
+		def _remove_trailing_commas(s: str) -> str:
+			# 只在字符串外部移除在 } 或 ] 之前的尾逗号
+			n, i = len(s), 0
+			out, in_str, esc = [], False, False
+			while i < n:
+				ch = s[i]
+				if not in_str:
+					if ch == '"':
+						in_str = True
+						out.append(ch)
+					elif ch == ',':
+						j = i + 1
+						while j < n and s[j] in ' \t\r\n':
+							j += 1
+						if j < n and s[j] in '}]':
+							# 丢弃这个尾逗号
+							i += 1
+							continue
+						out.append(ch)
+					else:
+						out.append(ch)
+				else:
+					if esc:
+						out.append(ch); esc = False
+					elif ch == '\\':
+						out.append(ch); esc = True
+					elif ch == '"':
+						in_str = False; out.append(ch)
+					else:
+						out.append(ch)
+				i += 1
+			return ''.join(out)
+
+		def _escape_inner_quotes_in_strings(s: str) -> str:
+			"""
+			在字符串内部，把不是收尾引号的裸双引号转义为 \"
+			收尾引号的判定：后面的**下一个非空白字符**是 , } ] : 或到达字符串末尾
+			"""
+			n, i = len(s), 0
+			out, in_str, esc = [], False, False
+			while i < n:
+				ch = s[i]
+				if not in_str:
+					if ch == '"':
+						in_str = True
+						out.append(ch)
+					else:
+						out.append(ch)
+				else:
+					if esc:
+						out.append(ch); esc = False
+					elif ch == '\\':
+						out.append(ch); esc = True
+					elif ch == '"':
+						# 观察这个引号后面的有效终结符
+						j = i + 1
+						while j < n and s[j] in ' \t\r\n':
+							j += 1
+						if j >= n or s[j] in ',}]:' :
+							# 收尾引号，不转义
+							in_str = False
+							out.append(ch)
+						else:
+							# 字符串内部的裸引号，转义
+							out.append('\\'); out.append('"')
+					else:
+						out.append(ch)
+				i += 1
+			return ''.join(out)
+
+		def _preprocess(s: str) -> str:
+			s = _strip_code_fences(s)
+			# 统一全角/智能引号
+			s = (s.replace('\ufeff', '')  # 去 BOM
+				.replace('“', '"').replace('”', '"')
+				.replace('„', '"').replace('‟', '"')
+				.replace('’', "'").replace('‘', "'"))
+			s = s.strip()
+			s = _remove_trailing_commas(s)
+			s = _escape_inner_quotes_in_strings(s)
+			return s
+
+		# 先尝试原始 JSON
+		raw = _strip_code_fences(response)
 		try:
-			return json.loads(response)
-		except json.JSONDecodeError:
-			return ast.literal_eval(response)
+			return json.loads(raw)
+		except Exception:
+			# 失败则做容错预处理再试
+			fixed = _preprocess(response)
+			try:
+				return json.loads(fixed)
+			except Exception as e2:
+				# 最后兜底：转成 Python 字面量再试（true/false/null -> True/False/None）
+				pyish = fixed.replace('null', 'None').replace('true', 'True').replace('false', 'False')
+				try:
+					return ast.literal_eval(pyish)
+				except Exception:
+					return {"error": "ParseError", "response": fixed}
 
 if __name__=="__main__":
 	OPENAI_SERVICE.logger.warning("STARTING LLM SERVICE")

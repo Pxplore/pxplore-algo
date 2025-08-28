@@ -1,18 +1,29 @@
-import json
-import os
 from pymongo import MongoClient
 from config import MONGO
 from bson.objectid import ObjectId
 from typing import Dict, Any
+from datetime import datetime
 
 collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.lecture_snippets
 
 def add_snippet(snippet):
+    if "children" not in snippet or len(snippet["children"]) == 0:
+        print(f"Snippet has no children: {snippet["module_name"]}")
+        return None
+
+    existing_snippets = get_snippets_by_module(snippet["module_id"])
+    for item in existing_snippets:
+        if len(item["children"]) == len(snippet["children"]) and item["children"][0]["index"] == snippet["children"][0]["index"] and item["children"][-1]["index"] == snippet["children"][-1]["index"]:
+            print(f"Snippet already exists: {item['_id']}")
+            return item['_id']
+    
+    snippet["created_at"] = datetime.now().isoformat()
     _id = collection.insert_one(snippet).inserted_id
     return _id
+    
 
 def get_snippet(snippet_id):
-    return collection.find_one({"_id": ObjectId(snippet_id)})
+    return collection.find_one({"_id": ObjectId(snippet_id)}, {"_id": 0, "created_at": 0})
 
 def get_all_snippets():
     return list(collection.find({}))
@@ -51,18 +62,5 @@ def parse_data(course, chapter, module):
         })
     return snippet_data
 
-def save_data(data):
-    knowledge_snippets = []
-    for course in data:
-        for chapter in course['children']:
-            for module in chapter['children']:
-                snippets = parse_data(course, chapter, module)
-                knowledge_snippets.extend(snippets)
-    return knowledge_snippets
-
-if __name__ == '__main__':
-    with open('./data/output/result.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    for snippet in save_data(data):
-        add_snippet(snippet)
+def remove_snippet(snippet_id):
+    collection.delete_one({"_id": snippet_id})

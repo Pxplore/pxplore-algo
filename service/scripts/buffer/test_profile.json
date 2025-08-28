@@ -1,0 +1,409 @@
+{
+    "meta": {
+        "session_id": "sess_ai_plus_18pages",
+        "student_id": "student_demo",
+        "module_id": "module_ai_plus_part1",
+        "start_time": "2025-08-13T11:50:00Z",
+        "end_time": "2025-08-13T12:55:40Z",
+        "total_duration_sec": 3940
+    },
+    "page_interactions": [
+        {
+            "page_number": 1,
+            "slice_id": "67b2989afa44b2e9e92badb1",
+            "first_entry_ts": "2025-08-13T11:50:00Z",
+            "entry_ts": "2025-08-13T11:50:00Z",
+            "exit_ts": "2025-08-13T11:52:30Z",
+            "time_spent_sec": 150,
+            "pause_count": 1,
+            "page_script": "欢迎各位，今天我们将讨论“AI+X”的话题，探索人工智能技术在各个交叉学科当中的应用。"
+        },
+        {
+            "page_number": 2,
+            "slice_id": "67b2989afa44b2e9e92badb8",
+            "first_entry_ts": "2025-08-13T11:52:30Z",
+            "entry_ts": "2025-08-13T11:52:30Z",
+            "exit_ts": "2025-08-13T11:56:00Z",
+            "time_spent_sec": 210,
+            "pause_count": 2,
+            "page_script": "正如我们前面课程中介绍的，我们看到了人工智能发展的发展蓝图——从专用的 、任务特定的人工智能（Narrow AI），比如翻译、推荐系统、命名实体识别（NER）和知识问答（Knowledge QA），向通用人工智能（General AI）迈进。这种转变体现在ChatGPT这样的语言模型上，它们不仅统一了多种自然语言处理任务，还能跨域进行知识迁移。最终，在未来， 我们可能会达到超级人工智能（Super AI），其智能程度远超当前人类。当前，作为一个应用属性非常强的学科，人工智能已经在各个领域展现出了令人可喜的能力。"
+        },
+        {
+            "page_number": 3,
+            "slice_id": "67b2989afa44b2e9e92badbf",
+            "first_entry_ts": "2025-08-13T11:56:00Z",
+            "entry_ts": "2025-08-13T11:56:00Z",
+            "exit_ts": "2025-08-13T11:59:40Z",
+            "time_spent_sec": 220,
+            "pause_count": 2,
+            "page_script": "正如OpenAI给模型命名为“davinci”所寄托的\n愿景，我们期待AI能够成为一种强大力量，在各个行业中实现价值最大化。\n\n从基础教育到职业分工，我们已经见证了现代社会的进步；同样地，我们有理由期待ChatGPT这样的通用能力模型在专业领域也能“发光发热”，正如幻灯片中所展示的——在内容创作、数\n据分析、营 销、搜索引擎优化、社交媒体管理以及聊天机器人开发等用例中，展现出ChatGPT的广泛应用潜能。"
+        },
+        {
+            "page_number": 4,
+            "slice_id": "67b2989afa44b2e9e92badc6",
+            "first_entry_ts": "2025-08-13T11:59:40Z",
+            "entry_ts": "2025-08-13T11:59:40Z",
+            "exit_ts": "2025-08-13T12:03:00Z",
+            "time_spent_sec": 200,
+            "pause_count": 1,
+            "page_script": "本次\n课程，我们聚焦探讨人工智能在专业领域的作用。如幻灯片中展示地那样，左侧展示了人 工智能方法的分类，包括机器学习、深度学习、强化学习等，这些都是构成AI系统的技术基础。右侧则描绘出人工\n智能的应用范畴，如教育、建筑、游戏、军事、农业、银行和零售等行业。这次课程的目的是介绍在这些垂直行业中，人工智能如何扮演关键角色，如秩序维护、科学研究和文艺创作\n。"
+        },
+        {
+            "page_number": 5,
+            "slice_id": "67b2989afa44b2e9e92badcd",
+            "first_entry_ts": "2025-08-13T12:03:00Z",
+            "entry_ts": "2025-08-13T12:03:00Z",
+            "exit_ts": "2025-08-13T12:06:00Z",
+            "time_spent_sec": 180,
+            "pause_count": 1,
+            "page_script": "在这一页中，我们\n讨论了人工智能在秩序维护方面的作用 。当前的AI没有情感，期望中能够\n准确地执行命令并遵从规则，成为维系公平与效率的守护者。秩序维护是保障社会正常运转的关键，人们从AI中期待的是无私的法治精神和礼治精神的体现。幻灯片中展示的图片所\n代表的赛场引导机器人和机器人警察，正体现了AI如何辅助人类维持社会秩序。"
+        },
+        {
+            "page_number": 6,
+            "slice_id": "67b2989afa44b2e9e92badd5",
+            "first_entry_ts": "2025-08-13T12:06:00Z",
+            "entry_ts": "2025-08-13T12:06:00Z",
+            "exit_ts": "2025-08-13T12:10:00Z",
+            "time_spent_sec": 240,
+            "pause_count": 2,
+            "page_script": "首先，我们来探\n讨法律领域中人工智能的应用。法 治是文明秩序\n的重要体现，它强调规则和程序的重要性。通过 法律智能的应用，我们能够减少法律专业人员的繁琐工作量，提高整体工作效率，同时\n时也能为非专业人士提供法律领域的参考。如幻灯片图表所示，人工智能在法律领域有多种应用场景，包括案例检索、裁判预测、文件生成、信息推荐、\n文件翻译、问答、风险预警、\n法律文本挖掘和合规审查等。尽管如此，这一领域的挑战也相当明显，如高质量法律数据的匮乏和数据标注成本的高昂，以及在处理这些数据时所需的高水平法律专业知识。"
+        },
+        {
+            "page_number": 7,
+            "slice_id": "67b2989bfa44b2e9e92baddc",
+            "first_entry_ts": "2025-08-13T12:10:00Z",
+            "entry_ts": "2025-08-13T12:10:00Z",
+            "exit_ts": "2025-08-13T12:13:50Z",
+            "time_spent_sec": 230,
+            "pause_count": 2,
+            "page_script": "我们来介绍人工智能在法律领域的四个主要应用：判决预测、法律问答、文书生成 和案例检索。判决预测\n运用事实记录和法律条文来确定罪名，并预测可能的判决结果。法律问答系统为用户提供对法律问题的解释、建议或答案。文书生成功能指的是通过给定的法律文书格式与案例事实来\n生成法律文书。案例检索功能帮助律师或法律工作者找到相似的案例，为法律案件分析提供支持。\n\n通过这些工具，人工智能可以作为法律工作者的主要决策者或辅助工具。例\n如，在判决预测的场景下，AI可以分析历史数据来预测判决结果，但最终决策仍需法官审议。而在法律问答或案例检索的情况下，AI则是作为一个高效工具辅助专业人员更快获取\n所需信息。\n\n此幻灯片的下半部分展示的图表和案例，详细说明了这些应用的工作原理及其效果。"
+        },
+        {
+            "page_number": 8,
+            "slice_id": "67b2989bfa44b2e9e92bade3",
+            "first_entry_ts": "2025-08-13T12:13:50Z",
+            "entry_ts": "2025-08-13T12:13:50Z",
+            "exit_ts": "2025-08-13T12:18:10Z",
+            "time_spent_sec": 260,
+            "pause_count": 3,
+            "page_script": "在 这张幻灯片上，我们将深入探讨人工智能作为执法者的现状及其潜在的挑战。数据显示，案件数量众多而法律专业人员相对不足的\n现象在我国普遍存在，如2021年全国法官人均办案数量高达238件，特别是在浙江省这一数字更是高达346件。相比之下，我国的律师人数和法律服务市场规模，与发达国家相比还有很大差距。因此，使用法律智能模型来提升法律实践的效率是一个非常重要的问题。幻灯片\n展示了两个案例：Harvey和Robin，显示了AI在提供法律服务方面的潜力与能力，例如Harvey可以完成\n案件自动分配，而Robin通过机器学习和大量数据分析，助力解决了1050万个案件。这些案例反映了AI在法律行业应用的广度和深度，同时也揭示了\n其潜在的规模效应优势。\n\n\n同时，AI执法不可避免地存在伦理问题，例如AI判决是否能确保公正公平，以及人们是否能接受一个“黑箱”的AI法官。"
+        },
+        {
+            "page_number": 9,
+            "slice_id": "67b2989bfa44b2e9e92badea",
+            "first_entry_ts": "2025-08-13T12:18:10Z",
+            "entry_ts": "2025-08-13T12:18:10Z",
+            "exit_ts": "2025-08-13T12:21:50Z",
+            "time_spent_sec": 220,
+            "pause_count": 2,
+            "page_script": "在这 张幻灯片中，我们讨论了AI的发展对社会法律秩序带来的新风险与新机遇。AI技术的进步与应用挑战了传统法律 体系，特别是在法律主体地位的认定上，我们面临一个重要问题：AI是否应该被认为是行为的主体，拥有权利、义务\n和责任，还是仅仅是工具，即人类行为的一个客体。\n\n这一讨论亟待在\n法学界和技术界找到共识。幻灯片呈现出两种相对的观点。首先是将AI看作工具的观点，这种观点认为AI仅仅是人的意志的一个延伸，其使用范围与规范应当在说明书中明确规定。\n目前国内已经对于这方面有了首个真实案例：甲未经许可搬运了乙使用AI工具生成的图片，法院判定甲侵害了乙就涉案图片享有的署名权和信息网络传播权。未来，AI带来的法\n律问题仍需更多的讨论与探索。"
+        },
+        {
+            "page_number": 10,
+            "slice_id": "67b2989bfa44b2e9e92badf2",
+            "first_entry_ts": "2025-08-13T12:21:50Z",
+            "entry_ts": "2025-08-13T12:21:50Z",
+            "exit_ts": "2025-08-13T12:25:50Z",
+            "time_spent_sec": 240,
+            "pause_count": 2,
+            "page_script": "随着AI技术的不断发展，我们遇到的是一个越来越复杂的产品\n责任判定环境，其中人机协同工作使得责任的追溯和认定变得更加困难。\n\n同时，我们看到市场对AI能力需求的增加，这不仅仅是在辅助作业\n上，比如购物、买菜等，而是在\n要求AI具备更高阶的功能，例如缔约行为的能力。这样的发展为AI仅仅作为“工具”这一观点提出了新的挑战，人们开始探讨是否应该给予AI某种形式的法律主体地位。\n\n幻灯片右侧展示的例子是索菲亚机器人，它由中国香港汉森机器人\n技术公司开发，是历史上首个被授予公民身份的机器人。索菲亚能以其橡胶皮肤展现超过62种面部表情，具备与\n人进行视觉交互的能力。该例子是为了说明在部分情况下，AI在法律上的认定已经超出了传统的工具或财产角色。"
+        },
+        {
+            "page_number": 11,
+            "slice_id": "67b2989bfa44b2e9e92badf9",
+            "first_entry_ts": "2025-08-13T12:25:50Z",
+            "entry_ts": "2025-08-13T12:25:50Z",
+            "exit_ts": "2025-08-13T12:29:20Z",
+            "time_spent_sec": 210,
+            "pause_count": 2,
+            "page_script": "进一步的，在智能社会中利用AI辅助政策制定的同样也是非常重要的。国家治理中，“礼治”重视价值观和仁德治理，强调了解并体恤民情。而在面对信息过载的现象时，管\n理者和决策者们需要从琳琅满目的信息中筛选出真正有价值的内容，以提升社会生产力和政策制定的质量。\n\n如幻灯片所示我们生活中的两个例子：商品广告满目的网络购物平台和各类真假难辨的网络传闻。这些例子说明了信息过载带来的挑战，如何在这海量信息中识别和提\n取对政策制定有用的数据和知识，是当前政策制定人必须面对和解决的关键问题。\n"
+        },
+        {
+            "page_number": 12,
+            "slice_id": "67b2989cfa44b2e9e92bae00",
+            "first_entry_ts": "2025-08-13T12:29:20Z",
+            "entry_ts": "2025-08-13T12:29:20Z",
+            "exit_ts": "2025-08-13T12:32:40Z",
+            "time_spent_sec": 200,
+            "pause_count": 1,
+            "page_script": "社会治理的智能化，即社会和企业借\n助人工智能等新一代信息技术，将数据挖掘、收集、分析及其应用到治理实践中，从而提高决策的效益和应对社会问题的能力。新技术革命，特别是人工智能和大数据，正在重塑着社会的组织模式和治理方式，开启了一种全新的社会治理模式。\n\n正如幻灯片中提到的例子那样\n，我国建立的天网系统能够有效地帮助公安机关打击犯罪，人脸识别系统的研发让公安机关能够快速发现并抓捕逃犯。"
+        },
+        {
+            "page_number": 13,
+            "slice_id": "67b2989cfa44b2e9e92bae07",
+            "first_entry_ts": "2025-08-13T12:32:40Z",
+            "entry_ts": "2025-08-13T12:32:40Z",
+            "exit_ts": "2025-08-13T12:36:30Z",
+            "time_spent_sec": 230,
+            "pause_count": 2,
+            "page_script": "同时\n，智能化技术同样能够帮助实现政策反馈智能化：利用人工智能技术帮助管理者快速把握新政策所引起的公众舆论反应，从而辅助政府在政策的制定和调整过程中作出更加精准的判断。\n\n所展示的图展示了政策制定的生命周期，强调了政策制定不仅仅是一个单一的行为，而是\n一个持续的过程，包括问题辨识、政策制定、实施、监督和反馈五个阶段。特别是在'opinion mining'和'simulation'的环节中，政策反馈智能化显得尤为重要。AI技术，在这里，可以作为一个重要的工具来识别和分析大规模数据，这有助于在政策\n设计初期识别潜在问题，并在政策实施后调整和优化政策响应。\n"
+        },
+        {
+            "page_number": 14,
+            "slice_id": "67b2989cfa44b2e9e92bae0e",
+            "first_entry_ts": "2025-08-13T12:36:30Z",
+            "entry_ts": "2025-08-13T12:36:30Z",
+            "exit_ts": "2025-08-13T12:40:00Z",
+            "time_spent_sec": 210,
+            "pause_count": 2,
+            "page_script": "AI技术是一把双刃剑，AI技术给社会治理带来便利\n的同时，也带来诸多弊端。\n人工智能在处理信息时的存在一种现象：标签化。标签化是指将对复杂对象的认识简化成标签，这种思维方式在AI算法中广泛存在，可能导致算法处理信息时存在偏差。\n\n幻灯片展示了某社交软件在仅性别变量不同的情况下的冷启动观察结果\n，分别为“男性”和“女性”两组。通过两组不同的社交媒体推荐内容，我们可以看到推荐算法根据性别这一变量，如何对内容进行差异化的推送。男性用户接收到的内容更倾向于体育和游戏，而女性用户看到的则是宠物和时尚相关的内容。这一观察显示了AI如何根据单个变量对\n用户进行刻板的标签化处理。"
+        },
+        {
+            "page_number": 15,
+            "slice_id": "67b2989cfa44b2e9e92bae15",
+            "first_entry_ts": "2025-08-13T12:40:00Z",
+            "entry_ts": "2025-08-13T12:40:00Z",
+            "exit_ts": "2025-08-13T12:44:10Z",
+            "time_spent_sec": 250,
+            "pause_count": 3,
+            "page_script": "AI技术中“标签化”现象的存在，反映了人类文化中所存在的偏见现象，该偏见可能导致社\n会不平等现象的双重累积效应。\n\n幻灯片中展示的研究数据源自Vlasceanu等人于2022年在PNAS发表的文章，研究指出，互联网搜索算法可能会传播并加强社会性别不平等。幻灯片上显示的Google图片 搜索结果表明，对于某些职业存在显著的性别刻\n板印象，如搜索“nurse”多显示女性图片，而搜索“engineer”则多呈现男性图片。\n\n右侧的 图表显示了人们在观看了具有高不公平性与低不公平性的图片搜索结果之前后（Pre vs. Post）对于一个职业的认知如何改变。在浏览了这些不同程度\n性别不平等的搜索结果后，人们在做出\"雇佣决策\"时的意向（Hiring Likelihood）和决策（Hiring Decision）有显著差异。人们的决策过程会很大程度上受到AI偏见的影响，进一步加深了偏见的存在，导致了社会不平等现象的加剧。"
+        },
+        {
+            "page_number": 16,
+            "slice_id": "67b2989cfa44b2e9e92bae1d",
+            "first_entry_ts": "2025-08-13T12:44:10Z",
+            "entry_ts": "2025-08-13T12:44:10Z",
+            "exit_ts": "2025-08-13T12:47:50Z",
+            "time_spent_sec": 220,
+            "pause_count": 2,
+            "page_script": "同时，AI技术已经被广泛应用于信息检索、信息推荐等信息获取领域中。然而，AI技术的应用一方面能够让我们更加高效\n地获取我们感兴趣的信息与知识，然而另一方面，人工智能助长了“信息茧房”现象的出现，信息茧房现象的存在对个人和群体观点极化以及自由表达具有负面影响。\n\n信息茧房是指人们倾向于接触和消费只符合自己现有观点和喜好的信息，这一现象可能由社交媒体平台上算\n法驱动的推荐系统进一步强化。如幻灯片中所引用的“我们只听我们选择和使我们愉悦的东西”概括了这种选择性心理的本质。科技平台利用这种心理，可能导致用户进一步被隔离在各自的意见气泡之中，从而降低曝露于不同或对立观点的机会。\n\n2023年，《Scien\nce》连发三篇关于Facebook中信息茧房的研究文章。这些研究探讨了社交媒体推荐算法如何在政治新闻曝露上导致意识形态上的不对称隔离， 以及这种算法对态度和行为的影响。信息茧房现象已经在真实场景中广泛存在，并影响着人们的认知与行为。"
+        },
+        {
+            "page_number": 17,
+            "slice_id": "67b2989cfa44b2e9e92bae24",
+            "first_entry_ts": "2025-08-13T12:47:50Z",
+            "entry_ts": "2025-08-13T12:47:50Z",
+            "exit_ts": "2025-08-13T12:51:40Z",
+            "time_spent_sec": 230,
+            "pause_count": 2,
+            "page_script": "同时，现如今AI已经被不正确地应用于对人类认知的干扰。“认知战”这一概念近期受到广泛关注，它涉及到如何利用人工智能来影响和束\n缚人类的认知。已有研究表明，社交机器人已经在真实社交媒体中被应用，社交机器人通过模拟人类行为，参与公共讨论，广泛应用于政治、经济和健康等议题中，创造了一个虚假的舆论环境。\n\n幻灯片展示了由Stella等人发表于《PNAS》2018年的研究，该研\n究表明社交机器人增加了在线社交系统中对负面和煽动性内容的暴露。通过幻灯片中的网络图，可以看到在加泰罗尼亚独立公投期间，持不同观点的人类用户群体和社交机器人之间具有频繁的交互。右侧的情感变化图表则显示了在“机器对人”发布负面言论之后，“人对人”互动中\n的情感明显下降，即“人与人”互动中言论显著地趋向负面，这表明了社交机器人对人情感状况和观点表达的潜在影响力，加剧了人与人之间矛盾的产生。"
+        },
+        {
+            "page_number": 18,
+            "slice_id": "67b2989dfa44b2e9e92bae2b",
+            "first_entry_ts": "2025-08-13T12:51:40Z",
+            "entry_ts": "2025-08-13T12:51:40Z",
+            "exit_ts": "2025-08-13T12:55:40Z",
+            "time_spent_sec": 240,
+            "pause_count": 2,
+            "page_script": "在本节中，我们一起回顾和反思了技术特别是人工智能(AI)在秩序维护中的双重作用。我们探讨了一个核心问题：技术是为我们提供了便捷，还是反而束缚了我们？\n\nAI的介入确实提高了效率和便捷性，同时也带来了平等与不平等问题的\n深入讨论。人工智能的发展可能带来了监控和控制的风险，同时它的偏见和不公平的问题也逐步进入了公众视野。\n\n左侧列举了一些负面影响，比如技术监控、加剧社会不平等、技术依赖，以及推卸责任等情形，而右侧则呼吁我们需要研究和开发更为可信、可靠，并且与人协\n同工作的AI系统，以促进公平、公正，并高效地维护社会秩序。"
+        }
+    ],
+    "discussion_threads": [
+        {
+            "thread_id": "thread_p7_legal_apps",
+            "page_number": 7,
+            "slice_id": "67b2989bfa44b2e9e92baddc",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p7_s_1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:10:30Z",
+                    "text_content": "四大法律应用里，‘判决预测’和‘案例检索’怎么结合？比如先检索相似案，再对新案做量刑建议可行吗？",
+                    "reply_to_message_id": null
+                },
+                {
+                    "message_id": "msg_p7_ai_1",
+                    "author_type": "ai_assistant",
+                    "author_id": "tutor_bot_01",
+                    "timestamp": "2025-08-13T12:11:10Z",
+                    "text_content": "可行。流程通常是：事实抽取→相似案例检索→法条映射→量刑要素量化→预测与不确定性提示。注意法域差异与可解释性。",
+                    "reply_to_message_id": "msg_p7_s_1"
+                }
+            ]
+        },
+        {
+            "thread_id": "thread_p9_subject_status",
+            "page_number": 9,
+            "slice_id": "67b2989bfa44b2e9e92badea",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p9_s_1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:18:00Z",
+                    "text_content": "AI作为‘主体’是否必须先有可归责的意志模型？否则责任就只能回到开发者/使用者身上。",
+                    "reply_to_message_id": null
+                },
+                {
+                    "message_id": "msg_p9_ai_1",
+                    "author_type": "ai_assistant",
+                    "author_id": "tutor_bot_01",
+                    "timestamp": "2025-08-13T12:18:40Z",
+                    "text_content": "学界主流仍倾向工具观，但在特定自治程度下会引入‘功能性主体性’框架，实务上多采用风险分担与保险机制。",
+                    "reply_to_message_id": "msg_p9_s_1"
+                }
+            ]
+        },
+        {
+            "thread_id": "thread_p13_policy_feedback",
+            "page_number": 13,
+            "slice_id": "67b2989cfa44b2e9e92bae07",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p13_s_1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:35:00Z",
+                    "text_content": "政策反馈智能化里，‘simulation’部分是否可用因果推断+多主体仿真结合？比如把意见矿挖的要素喂入ABM。",
+                    "reply_to_message_id": null
+                },
+                {
+                    "message_id": "msg_p13_ai_1",
+                    "author_type": "ai_assistant",
+                    "author_id": "tutor_bot_01",
+                    "timestamp": "2025-08-13T12:35:40Z",
+                    "text_content": "可以。常见做法为：结构化民意要素→建立行为规则→参数校准→情景推演；关键在于外推稳健性与偏差控制。",
+                    "reply_to_message_id": "msg_p13_s_1"
+                }
+            ]
+        },
+        {
+            "thread_id": "thread_p15_bias",
+            "page_number": 15,
+            "slice_id": "67b2989cfa44b2e9e92bae15",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p15_s_1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:40:30Z",
+                    "text_content": "如果训练集存在性别偏见，后验纠偏是靠再加权还是生成对抗采样更稳？有没有线上监控的最佳实践？",
+                    "reply_to_message_id": null
+                },
+                {
+                    "message_id": "msg_p15_ai_1",
+                    "author_type": "ai_assistant",
+                    "author_id": "tutor_bot_01",
+                    "timestamp": "2025-08-13T12:41:10Z",
+                    "text_content": "两者可结合：训练期用重加权/去偏损失，推断期做阈值校正与对抗样本校验；上线应配合切片指标与漂移/公平告警。",
+                    "reply_to_message_id": "msg_p15_s_1"
+                }
+            ]
+        },
+        {
+            "thread_id": "thread_p8_review_followup",
+            "page_number": 8,
+            "slice_id": "67b2989bfa44b2e9e92bade3",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p8_s_r1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:51:00Z",
+                    "text_content": "回看这里的‘AI执法’案例，Harvey/Robin的关键成效指标分别是什么？能否量化对办案时长的缩短？",
+                    "reply_to_message_id": null
+                }
+            ]
+        },
+        {
+            "thread_id": "thread_p6_review_followup",
+            "page_number": 6,
+            "slice_id": "67b2989afa44b2e9e92badd5",
+            "initiator_type": "student",
+            "initiator_id": "student_demo",
+            "messages": [
+                {
+                    "message_id": "msg_p6_s_r1",
+                    "author_type": "student",
+                    "author_id": "student_demo",
+                    "timestamp": "2025-08-13T12:52:00Z",
+                    "text_content": "法律文本挖掘里，信息抽取误差对后续裁判预测影响多大？是否需要不确定性传播到下游？",
+                    "reply_to_message_id": null
+                }
+            ]
+        }
+    ],
+    "review_threads": [
+        {
+            "review_thread_id": "rt_end_back_legal",
+            "anchor": {
+                "departure_page": 18,
+                "departure_ts": "2025-08-13T12:50:00Z"
+            },
+            "return": {
+                "return_page": 18,
+                "return_ts": "2025-08-13T12:55:00Z",
+                "returned": true
+            },
+            "duration_sec": 300,
+            "segments": [
+                {
+                    "seq": 1,
+                    "page_number": 8,
+                    "entry_ts": "2025-08-13T12:50:30Z",
+                    "exit_ts": "2025-08-13T12:53:10Z",
+                    "time_spent_sec": 160,
+                    "pause_count": 2,
+                    "interactions": {
+                        "message_ids": [
+                            "msg_p8_s_r1"
+                        ],
+                        "thread_ids": [
+                            "thread_p8_review_followup"
+                        ],
+                        "quiz_ids": []
+                    }
+                },
+                {
+                    "seq": 2,
+                    "page_number": 6,
+                    "entry_ts": "2025-08-13T12:53:10Z",
+                    "exit_ts": "2025-08-13T12:55:00Z",
+                    "time_spent_sec": 110,
+                    "pause_count": 1,
+                    "interactions": {
+                        "message_ids": [
+                            "msg_p6_s_r1"
+                        ],
+                        "thread_ids": [
+                            "thread_p6_review_followup"
+                        ],
+                        "quiz_ids": []
+                    }
+                }
+            ]
+        }
+    ],
+    "quizzes": [ 
+        {
+            "question_id": "q_page5_order",
+            "page_number_of_quiz": 5,
+            "timestamp": "2025-08-13T12:05:00Z",
+            "is_correct": true,
+            "test_content": {
+                "question": "下列哪项最能体现AI在秩序维护中的关键价值？",
+                "selection_1": "替代一切人类岗位",
+                "selection_2": "严格执行规则与程序、提升公平与效率",
+                "selection_3": "完全自由的自我学习",
+                "true_selection": "selection_2",
+                "choose_selection": "selection_2"
+            }
+        },
+        {
+            "question_id": "q_page12_govern",
+            "page_number_of_quiz": 12,
+            "timestamp": "2025-08-13T12:30:00Z",
+            "is_correct": false,
+            "test_content": {
+                "question": "社会治理智能化的核心不包括下面哪一项？",
+                "selection_1": "将数据挖掘/分析融入治理流程",
+                "selection_2": "仅依赖人工直觉进行政策评估",
+                "selection_3": "利用新一代信息技术提升应对社会问题的能力",
+                "true_selection": "selection_2",
+                "choose_selection": "selection_1"
+            }
+        }
+    ]
+}
