@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
-import re
+from tqdm import tqdm
 import sys
 import os
 
@@ -203,20 +203,15 @@ class DataProcessor:
         lecture_map = {item["course"]: item for item in data["lecture_data"]}
 
         # 处理每个testset项目
-        for testset_item in data["testset_data"]:
+        results = []
+        for testset_item in tqdm(data["testset_data"]):
             course_name = testset_item["course"]
             if course_name in lecture_map:
                 lecture_item = lecture_map[course_name]
                 result = await self.process_single_item(lecture_item, testset_item)
-
-                # 保存结果
-                student_id = result["meta"]["student_id"]
-                # 清理文件名中的非法字符
-                safe_course_name = re.sub(r'[<>:"/\\|?*]', '_', course_name)
-                output_file = output_path / f"{safe_course_name}_{student_id}.json"
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False, indent=2)
-                print(f"Processed and saved: {output_file}")
+                results.append(result)
+                with open(output_path / f"processed_student_profiles.json", 'w', encoding='utf-8') as f:
+                    json.dump(results, f, ensure_ascii=False, indent=2)
             else:
                 print(f"No lecture data found for course: {course_name}")
 
