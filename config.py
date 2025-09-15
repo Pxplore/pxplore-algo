@@ -98,12 +98,12 @@ class EMBED:
 	MODEL = "baai/bge-large-zh-v1.5"
 	PROTOCOL = "http"
 	HOST = "localhost" #  the host of the embed model
-	PORT = 33388
+	PORT = 8928
 
 class QDRANT:
 	COLLECTION = "pxplore"
 	HOST = "localhost" #  the host of the qdrant
-	PORT = 33366
+	PORT = 8926
 	GRPC_PORT = 33377
 	TOP_K = 10
 	ALPHA = 0.2

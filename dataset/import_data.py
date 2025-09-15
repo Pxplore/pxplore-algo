@@ -53,7 +53,8 @@ class DataImporter:
 
     def clear_collection(self):
         print(f"🗑️ Clearing collection '{self.collection_name}'...")
-        client = QdrantClient(url=f"http://{QDRANT.HOST}", port=QDRANT.PORT, grpc_port=QDRANT.GRPC_PORT)
+        client = QdrantClient(url=f"http://{QDRANT.HOST}", port=QDRANT.PORT)
+        # grpc_port=QDRANT.GRPC_PORT
         try:
             # 检查collection是否存在
             collections = client.get_collections().collections
@@ -95,7 +96,8 @@ class DataImporter:
         print(f"→ Vector dimension: {vector_dim}")
 
         print("Step 3: Connecting to Qdrant…")
-        client = QdrantClient(url=f"http://{QDRANT.HOST}", port=QDRANT.PORT, grpc_port=QDRANT.GRPC_PORT)
+        client = QdrantClient(url=f"http://{QDRANT.HOST}", port=QDRANT.PORT)
+        #  grpc_port=QDRANT.GRPC_PORT
         if QDRANT.COLLECTION not in [c.name for c in client.get_collections().collections]:
             print(f"→ Creating collection '{QDRANT.COLLECTION}' with dim={vector_dim}")
             client.create_collection(
