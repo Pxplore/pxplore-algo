@@ -18,7 +18,7 @@ class HybridRetriever:
         self.qdrant = QdrantClient(
             url=f"http://{QDRANT.HOST}",
             port=QDRANT.PORT,
-            grpc_port=QDRANT.GRPC_PORT,
+            # grpc_port=QDRANT.GRPC_PORT,
             check_compatibility=False
         )
 

@@ -5,6 +5,7 @@ from service.llm.openai import OPENAI_SERVICE
 from service.utils.episodes_processor import build_episodes
 from data.task import add_task, get_task, update_task
 from pathlib import Path
+from tqdm import tqdm
 import time
 import json
 BASE_DIR = Path(__file__).parent
@@ -149,13 +150,20 @@ class StudentProfiling:
         }
 
 if __name__ == "__main__":
-    behavioral_data = json.load(open("./service/scripts/buffer/test_profile.json", "r", encoding="utf-8"))
-    taskid = asyncio.run(StudentProfiling().run(behavioral_data))
-    print(f"Task ID: {taskid}")
+    processed_student_profiles = json.load(open("./service/test/test_output/processed_student_profiles.json", "r", encoding="utf-8"))
+    result = []
+    for profile in tqdm(processed_student_profiles):
+        taskid = asyncio.run(StudentProfiling().run(profile))
 
-    while True:
-        task = get_task(taskid)
-        if task["status"] == STATUS_COMPLETED:
-            print(task["finalize_analysis"])
-            break
-        time.sleep(5)
+        while True:
+            task = get_task(taskid)
+            if task["status"] == STATUS_COMPLETED:
+                result.append({
+                    "task_id": taskid,
+                    "behavioral_data": profile,
+                    "finalize_analysis": task["finalize_analysis"]
+                })
+                break
+            time.sleep(5)
+
+        json.dump(result, open("./service/test/test_output/result_student_profiling.json", "w", encoding="utf-8"), ensure_ascii=False, indent=4)
