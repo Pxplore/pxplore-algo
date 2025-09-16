@@ -18,22 +18,15 @@ class StyleAdapter:
 		prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
 		self.prompt_text = open(prompt_path, "r", encoding="utf-8").read()
 
-	def handle_prompt(self, history_content: str, recommend_id: str, recommend_reason: str) -> str:
+	def handle_prompt(self, prompt_text: str, history_content: str, recommend_id: str, recommend_reason: str) -> str:
 		recommend_snippet = get_snippet(recommend_id)
 		recommend_content = parse_snippet(recommend_snippet)
-		return f'''### 历史内容
-{history_content}
 
-### 推荐内容
-{recommend_content}
-
-### 推荐理由
-{recommend_reason}
-'''
+		return prompt_text.replace("[history_content]", history_content).replace("[recommend_content]", recommend_content).replace("[recommend_reason]", recommend_reason)
 
 	async def process_adaptation(self, task_id: str, history_content: str, recommend_id: str, recommend_reason: str):
 		try:
-			user_prompt = self.handle_prompt(history_content, recommend_id, recommend_reason)
+			prompt_text = self.handle_prompt(prompt_text, history_content, recommend_id, recommend_reason)
 
 			job_id = OPENAI_SERVICE.trigger(
 				parent_service="Pxplore",
@@ -41,8 +34,7 @@ class StyleAdapter:
 				use_cache=True,
 				model="gpt-4o",
 				messages=[
-					{"role": "system", "content": self.prompt_text},
-					{"role": "user", "content": user_prompt}
+					{"role": "system", "content": self.prompt_text}
 				]
 			)
 			response = OPENAI_SERVICE.get_response_sync(job_id)
