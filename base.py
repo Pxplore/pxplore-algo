@@ -22,7 +22,7 @@ class RecommendResponse(BaseModel):
     message: str
 
 class AdaptRequest(BaseModel):
-    interaction_history: str
+    history_content: str
     title: str
     recommend_id: str
     recommend_reason: str

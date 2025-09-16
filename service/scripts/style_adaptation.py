@@ -18,11 +18,11 @@ class StyleAdapter:
 		prompt_path = BASE_DIR / "prompts" / "style_adaptation.txt"
 		self.prompt_text = open(prompt_path, "r", encoding="utf-8").read()
 
-	def handle_prompt(self, interaction_history: str, recommend_id: str, recommend_reason: str) -> str:
+	def handle_prompt(self, history_content: str, recommend_id: str, recommend_reason: str) -> str:
 		recommend_snippet = get_snippet(recommend_id)
 		recommend_content = parse_snippet(recommend_snippet)
 		return f'''### 历史内容
-{interaction_history}
+{history_content}
 
 ### 推荐内容
 {recommend_content}
@@ -31,9 +31,9 @@ class StyleAdapter:
 {recommend_reason}
 '''
 
-	async def process_adaptation(self, task_id: str, interaction_history: str, recommend_id: str, recommend_reason: str):
+	async def process_adaptation(self, task_id: str, history_content: str, recommend_id: str, recommend_reason: str):
 		try:
-			user_prompt = self.handle_prompt(interaction_history, recommend_id, recommend_reason)
+			user_prompt = self.handle_prompt(history_content, recommend_id, recommend_reason)
 
 			job_id = OPENAI_SERVICE.trigger(
 				parent_service="Pxplore",
@@ -53,12 +53,12 @@ class StyleAdapter:
 		except Exception as e:
 			update_task(task_id, {"status": STATUS_FAILED, "error": str(e)})
 	
-	async def run(self, interaction_history: str, title: str, recommend_id: str, recommend_reason: str) -> str:
+	async def run(self, history_content: str, title: str, recommend_id: str, recommend_reason: str) -> str:
 
 		task_id = add_task({
 			"status": STATUS_PENDING,
 			"task": "style_adaptation",
-			"interaction_history": interaction_history,
+			"history_content": history_content,
 			"title": title,
 			"recommend_id": recommend_id,
 			"recommend_reason": recommend_reason,
@@ -66,7 +66,7 @@ class StyleAdapter:
 			"error": None
 		})
 
-		asyncio.create_task(self.process_adaptation(task_id, interaction_history, recommend_id, recommend_reason))
+		asyncio.create_task(self.process_adaptation(task_id, history_content, recommend_id, recommend_reason))
 
 		return str(task_id)
 	
@@ -80,4 +80,5 @@ class StyleAdapter:
 			"error": task.get("error"),
 			"adaptation_result": task.get("adaptation_result")
 		}
+
 

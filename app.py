@@ -83,7 +83,7 @@ async def style_adaptation(request: AdaptRequest):
     if style_adapter is None:
         raise HTTPException(status_code=503, detail="StyleAdapter service not ready")
     try:
-        task_id = await style_adapter.run(request.interaction_history, request.title, request.recommend_id, request.recommend_reason)
+        task_id = await style_adapter.run(request.history_content, request.title, request.recommend_id, request.recommend_reason)
         return {
             "task_id": task_id,
             "message": "style adaptation started successfully"
