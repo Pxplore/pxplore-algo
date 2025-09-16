@@ -91,7 +91,7 @@ class LLM:
 	class VOLCARK:
 		API_KEY = args.volcark_api_key
 		MODEL_NAME_MAPPING = {
-			"deepseek-r1": "ep-20250222122655-tfzjr"
+			"deepseek-r1": "ep-20250327161916-586pz"
 		}
 
 class EMBED:

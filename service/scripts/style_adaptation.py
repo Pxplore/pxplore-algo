@@ -1,8 +1,10 @@
 from pathlib import Path
+import sys
 from typing import Dict, Any
 import asyncio
 from datetime import datetime
 from service.llm.openai import OPENAI_SERVICE
+from service.llm.volcark import VOLCARK_SERVICE
 from data.snippet import get_snippet, parse_snippet
 from data.task import add_task, get_task, update_task
 
@@ -22,22 +24,32 @@ class StyleAdapter:
 		recommend_snippet = get_snippet(recommend_id)
 		recommend_content = parse_snippet(recommend_snippet)
 
-		return prompt_text.replace("[history_content]", history_content).replace("[recommend_content]", recommend_content).replace("[recommend_reason]", recommend_reason)
+		return prompt_text.replace("[history_content]", history_content).replace("[recommend_content]", str(recommend_content.split("\n\n"))).replace("[recommend_reason]", recommend_reason)
 
 	async def process_adaptation(self, task_id: str, history_content: str, recommend_id: str, recommend_reason: str):
 		try:
-			prompt_text = self.handle_prompt(prompt_text, history_content, recommend_id, recommend_reason)
+			system_prompt = self.handle_prompt(self.prompt_text, history_content, recommend_id, recommend_reason)
 
-			job_id = OPENAI_SERVICE.trigger(
+			# job_id = OPENAI_SERVICE.trigger(
+			# 	parent_service="Pxplore",
+			# 	parent_job_id=None,
+			# 	use_cache=False,
+			# 	model="gpt-4o",
+			# 	messages=[
+			# 		{"role": "system", "content": system_prompt}
+			# 	]
+			# )
+			# response = OPENAI_SERVICE.get_response_sync(job_id)
+			job_id = VOLCARK_SERVICE.trigger(
 				parent_service="Pxplore",
 				parent_job_id=None,
-				use_cache=True,
-				model="gpt-4o",
+				use_cache=False,
+				model="deepseek-r1",
 				messages=[
-					{"role": "system", "content": self.prompt_text}
+					{"role": "system", "content": system_prompt}
 				]
 			)
-			response = OPENAI_SERVICE.get_response_sync(job_id)
+			response, reasoning = VOLCARK_SERVICE.get_response_sync(job_id)
 			response = OPENAI_SERVICE.parse_json_response(response)
 
 			update_task(task_id, {"status": STATUS_COMPLETED, "adaptation_result": response})

@@ -44,7 +44,7 @@ def add_label(snippet_id, label):
 
 def parse_snippet(snippet: Dict[str, Any]) -> str:
 	content_list = [item['children'][1]['script'].replace('\n', '').strip() for item in snippet['children']]
-	return "\n".join(content_list)
+	return "\n\n".join(content_list)
 
 def parse_data(course, chapter, module):
     snippet_data = []

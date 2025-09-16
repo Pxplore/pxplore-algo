@@ -21,7 +21,7 @@ for profile, recommend_content in zip(student_profile, recommendation_results):
 
     while True:
         response = requests.get(f"http://localhost:8899/adapt/status/{task_id}")
-        if response.json()["status"] == "completed":
+        if response.json()["status"] == "completed" or  response.json()["status"] == "failed":
             break
         time.sleep(5)
 
@@ -35,7 +35,7 @@ for profile, recommend_content in zip(student_profile, recommendation_results):
     })
 
     print(adaptation_result["start_speech"])
-    print(adaptation_result["new_scripts"])
+    print(adaptation_result["refined_scripts"])
     print(adaptation_result["end_speech"])
     json.dump(results, open("./service/scripts/buffer/result_style_adaptation.json", "w"), indent=4, ensure_ascii=False)
     exit()
