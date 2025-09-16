@@ -78,12 +78,12 @@ async def get_recommendation_status(task_id: str):
         logger.error(f"Error getting recommendation status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.post("/style_adapt", response_model=TaskResponse)
+@app.post("/adapt", response_model=TaskResponse)
 async def style_adaptation(request: AdaptRequest):
     if style_adapter is None:
         raise HTTPException(status_code=503, detail="StyleAdapter service not ready")
     try:
-        task_id = await style_adapter.run(request.student_profile, request.interaction_history, request.title, request.recommend_id, request.recommend_reason)
+        task_id = await style_adapter.run(request.interaction_history, request.title, request.recommend_id, request.recommend_reason)
         return {
             "task_id": task_id,
             "message": "style adaptation started successfully"
@@ -92,7 +92,7 @@ async def style_adaptation(request: AdaptRequest):
         logger.error(f"Error starting style adaptation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/style_adapt/status/{task_id}", response_model=AdaptResponse)
+@app.get("/adapt/status/{task_id}", response_model=AdaptResponse)
 async def get_adaptation_status(task_id: str):
     if style_adapter is None:
         raise HTTPException(status_code=503, detail="StyleAdapter service not ready")

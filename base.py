@@ -22,7 +22,6 @@ class RecommendResponse(BaseModel):
     message: str
 
 class AdaptRequest(BaseModel):
-    student_profile: Dict[str, Any]
     interaction_history: str
     title: str
     recommend_id: str

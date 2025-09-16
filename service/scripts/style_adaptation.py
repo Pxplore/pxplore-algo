@@ -31,7 +31,7 @@ class StyleAdapter:
 {recommend_reason}
 '''
 
-	async def process_adaptation(self, task_id: str, student_profile: Dict[str, Any], interaction_history: str, recommend_id: str, recommend_reason: str):
+	async def process_adaptation(self, task_id: str, interaction_history: str, recommend_id: str, recommend_reason: str):
 		try:
 			user_prompt = self.handle_prompt(interaction_history, recommend_id, recommend_reason)
 
@@ -53,12 +53,11 @@ class StyleAdapter:
 		except Exception as e:
 			update_task(task_id, {"status": STATUS_FAILED, "error": str(e)})
 	
-	async def run(self, student_profile: Dict[str, Any], interaction_history: str, title: str, recommend_id: str, recommend_reason: str) -> str:
+	async def run(self, interaction_history: str, title: str, recommend_id: str, recommend_reason: str) -> str:
 
 		task_id = add_task({
 			"status": STATUS_PENDING,
 			"task": "style_adaptation",
-			"student_profile": student_profile,
 			"interaction_history": interaction_history,
 			"title": title,
 			"recommend_id": recommend_id,
@@ -67,7 +66,7 @@ class StyleAdapter:
 			"error": None
 		})
 
-		asyncio.create_task(self.process_adaptation(task_id, student_profile, interaction_history, recommend_id, recommend_reason))
+		asyncio.create_task(self.process_adaptation(task_id, interaction_history, recommend_id, recommend_reason))
 
 		return str(task_id)
 	
@@ -82,10 +81,3 @@ class StyleAdapter:
 			"adaptation_result": task.get("adaptation_result")
 		}
 
-
-if __name__ == "__main__":
-	src_snippet = get_snippet("68808c0001fa9003100443f4")
-	dst_snippet = get_snippet("68808c0001fa9003100443fa")
-
-	results = StyleAdapter().run(src_snippet, dst_snippet)
-	print(results)
