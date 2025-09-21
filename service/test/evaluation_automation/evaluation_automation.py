@@ -1,6 +1,16 @@
 import json
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+import matplotlib.gridspec as gridspec
 from datetime import datetime
+import pandas as pd
+
+# Set style
+plt.style.use('default')
+sns.set_style("whitegrid")
+sns.set_palette("husl")
 
 
 def load_json_file(filename):
@@ -63,10 +73,16 @@ def calculate_part_b_score(annotations, recommendations):
                 rec_map[record_id] = []
             rec_map[record_id].append(rec.get("name", ""))
 
+    # 提取所有课程名称用于后续分析
+    all_courses = set()
+    for courses in rec_map.values():
+        all_courses.update(courses)
+
     scores = []
     score_details = []  # 存储每个记录的详细评分信息
     detailed_issues = []  # 存储详细问题信息
     invalid_records = []  # 存储无效记录ID
+    positions = []  # 存储所有有效课程的位置信息
 
     for annotation in annotations:
         record_id = annotation.get("record_id")
@@ -132,6 +148,7 @@ def calculate_part_b_score(annotations, recommendations):
                 record_score += course_score
                 record_info["found_courses"].append(course)
                 record_info["positions"].append(position)
+                positions.append(position)  # 添加到全局位置列表
             else:
                 # 推荐课程不在排序列表中，得0分
                 record_info["missing_courses"].append(course)
@@ -154,15 +171,250 @@ def calculate_part_b_score(annotations, recommendations):
     avg_score = np.mean(scores) if scores else 0
     valid_records = len(scores)  # 有效的评分记录数量
 
-    return avg_score, valid_records, len(annotations), invalid_records, score_details, detailed_issues
+    return avg_score, valid_records, len(annotations), invalid_records, score_details, detailed_issues, positions
+
+
+def bootstrap_ci(data, stat_func=np.mean, n_bootstraps=10000, ci=95):
+    """Calculate confidence interval using bootstrap method"""
+    if not data:
+        return (0, 0)
+
+    bootstrapped_stats = []
+    for _ in range(n_bootstraps):
+        sample = np.random.choice(data, size=len(data), replace=True)
+        bootstrapped_stats.append(stat_func(sample))
+
+    lower = np.percentile(bootstrapped_stats, (100 - ci) / 2)
+    upper = np.percentile(bootstrapped_stats, ci + (100 - ci) / 2)
+    return lower, upper
+
+
+def binomial_ci(successes, trials, ci=0.95):
+    """Calculate binomial confidence interval"""
+    if trials == 0:
+        return (0, 0)
+
+    alpha = 1 - ci
+    lower = stats.beta.ppf(alpha / 2, successes, trials - successes + 1)
+    upper = stats.beta.ppf(1 - alpha / 2, successes + 1, trials - successes)
+    return lower, upper
+
+
+def calculate_top_k_hit_rate(positions, k):
+    """Calculate Top-k hit rate"""
+    if not positions:
+        return 0
+    return np.mean([1 if pos < k else 0 for pos in positions])
+
+
+def generate_visualization(results, positions, output_path):
+    """生成可视化报告"""
+    # 提取数据
+    part_a_data = {
+        'score': results['part_a']['average_score'],
+        'reasonable': results['part_a']['counts']['合理'],
+        'unreasonable': results['part_a']['counts']['不合理'],
+        'total': results['part_a']['total_records']
+    }
+
+    part_b_data = {
+        'score': results['part_b']['average_score'],
+        'valid': results['part_b']['valid_records'],
+        'invalid': len(results['part_b']['invalid_records']),
+        'total': results['part_b']['total_records']
+    }
+
+    part_c_data = {
+        'score': results['part_c']['average_score'],
+        'reasonable': results['part_c']['counts']['合理'],
+        'unreasonable': results['part_c']['counts']['不合理'],
+        'total': results['part_c']['total_records']
+    }
+
+    # 计算Top-k命中率
+    top_rates = {}
+    top_cis = {}
+    if positions:
+        for k in [1, 3, 5, 10]:
+            hit_rate = calculate_top_k_hit_rate(positions, k)
+            top_rates[k] = hit_rate
+            top_cis[k] = binomial_ci(int(hit_rate * len(positions)), len(positions))
+
+    # 计算置信区间
+    a_ci = binomial_ci(part_a_data['reasonable'], part_a_data['total'])
+    b_ci = binomial_ci(part_b_data['valid'], part_b_data['total'])
+    c_ci = binomial_ci(part_c_data['reasonable'], part_c_data['total'])
+
+    # 创建图表
+    fig = plt.figure(figsize=(18, 14))
+    fig.suptitle('Algorithm Evaluation Results', fontsize=20, fontweight='bold', y=0.98)
+
+    # 使用GridSpec创建布局
+    gs = gridspec.GridSpec(3, 3, figure=fig, hspace=0.4, wspace=0.3)
+
+    # 1. 各部分得分对比图
+    ax1 = fig.add_subplot(gs[0, :])
+    parts = ['Part A (Relevance)', 'Part B (Ranking)', 'Part C (Overall)']
+    scores = [part_a_data['score'], part_b_data['score'], part_c_data['score']]
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+
+    bars = ax1.bar(parts, scores, color=colors, alpha=0.8, edgecolor='black', linewidth=1.5)
+    ax1.set_ylabel('Score', fontsize=14)
+    ax1.set_title('Overall Scores Comparison', fontsize=16, fontweight='bold', pad=20)
+    ax1.set_ylim(0, 1)
+    ax1.tick_params(axis='x', rotation=10)
+
+    # 在柱状图上添加数值标签
+    for bar, score in zip(bars, scores):
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2., height + 0.01,
+                 f'{score:.2%}', ha='center', va='bottom', fontweight='bold', fontsize=12)
+
+    # 2. Part A 和 Part C 的合理性分布
+    ax2 = fig.add_subplot(gs[1, 0])
+    labels = ['Relevant', 'Irrelevant']
+    a_sizes = [part_a_data['reasonable'], part_a_data['unreasonable']]
+    c_sizes = [part_c_data['reasonable'], part_c_data['unreasonable']]
+    colors = ['#66BB6A', '#EF5350']
+
+    wedges, texts, autotexts = ax2.pie(a_sizes, labels=labels, autopct='%1.1f%%',
+                                       startangle=90, colors=colors, explode=(0.05, 0))
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+    ax2.set_title('Part A Relevance Distribution', fontsize=14, fontweight='bold', pad=20)
+
+    ax3 = fig.add_subplot(gs[1, 2])
+    wedges, texts, autotexts = ax3.pie(c_sizes, labels=labels, autopct='%1.1f%%',
+                                       startangle=90, colors=colors, explode=(0.05, 0))
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+    ax3.set_title('Part C Relevance Distribution', fontsize=14, fontweight='bold', pad=20)
+
+    # 3. Part B 有效性分布
+    ax4 = fig.add_subplot(gs[1, 1])
+    labels = ['Valid', 'Invalid']
+    sizes = [part_b_data['valid'], part_b_data['invalid']]
+    colors = ['#66BB6A', '#EF5350']
+
+    wedges, texts, autotexts = ax4.pie(sizes, labels=labels, autopct='%1.1f%%',
+                                       startangle=90, colors=colors, explode=(0.05, 0))
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+    ax4.set_title('Part B Validity Distribution', fontsize=14, fontweight='bold', pad=20)
+
+    # 4. Part B Top-k 命中率
+    if positions:
+        ax5 = fig.add_subplot(gs[2, 0])
+        top_ks = [f'Top-{k}' for k in [1, 3, 5, 10]]
+        hit_rates = [top_rates[k] for k in [1, 3, 5, 10]]
+        cis = [top_cis[k] for k in [1, 3, 5, 10]]
+
+        x_pos = np.arange(len(top_ks))
+        bars = ax5.bar(x_pos, hit_rates, color=['#3498DB', '#9B59B6', '#E74C3C', '#F39C12'],
+                       alpha=0.8, edgecolor='black', linewidth=1.5,
+                       yerr=[(hit_rates[i] - cis[i][0]) for i in range(len(hit_rates))], capsize=10)
+
+        ax5.set_xticks(x_pos)
+        ax5.set_xticklabels(top_ks)
+        ax5.set_ylabel('Hit Rate', fontsize=14)
+        ax5.set_title('Part B Top-k Hit Rates', fontsize=14, fontweight='bold', pad=20)
+        ax5.set_ylim(0, 1)
+
+        # 添加数值标签
+        for i, (bar, rate) in enumerate(zip(bars, hit_rates)):
+            height = bar.get_height()
+            ax5.text(bar.get_x() + bar.get_width() / 2., height + 0.02,
+                     f'{rate:.2%}', ha='center', va='bottom', fontweight='bold')
+    else:
+        # 如果没有位置数据，显示占位符
+        ax5 = fig.add_subplot(gs[2, 0])
+        ax5.text(0.5, 0.5, 'No ranking position data available',
+                 ha='center', va='center', transform=ax5.transAxes, fontsize=12)
+        ax5.set_title('Part B Ranking Analysis', fontsize=14, fontweight='bold', pad=20)
+        ax5.set_xticks([])
+        ax5.set_yticks([])
+
+    # 5. 置信区间分析 - 修复yerr不能为负的问题
+    ax6 = fig.add_subplot(gs[2, 1])
+
+    parts = ['Part A', 'Part B', 'Part C']
+    scores = [part_a_data['score'], part_b_data['score'], part_c_data['score']]
+    cis = [a_ci, b_ci, c_ci]
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+
+    x_pos = np.arange(len(parts))
+
+    for i, (score, ci, color) in enumerate(zip(scores, cis, colors)):
+        # 确保yerr值不为负
+        yerr_lower = max(0, score - ci[0])
+        yerr_upper = max(0, ci[1] - score)
+
+        ax6.errorbar(x_pos[i], score, yerr=[[yerr_lower], [yerr_upper]],
+                     fmt='o', color=color, markersize=10, capsize=8, capthick=2,
+                     elinewidth=2, label=parts[i])
+
+    ax6.set_xticks(x_pos)
+    ax6.set_xticklabels(parts)
+    ax6.set_ylabel('Score', fontsize=14)
+    ax6.set_title('Scores with 95% Confidence Intervals', fontsize=14, fontweight='bold', pad=20)
+    ax6.grid(True, alpha=0.3)
+    ax6.legend()
+
+    # 6. 统计摘要
+    ax7 = fig.add_subplot(gs[2, 2])
+    ax7.axis('off')
+
+    summary_text = f"""
+Evaluation Results Summary
+
+Part A (Relevance):
+  Average Score: {part_a_data['score']:.4f} ({part_a_data['score'] * 100:.2f}%)
+  Relevant Records: {part_a_data['reasonable']}
+  Irrelevant Records: {part_a_data['unreasonable']}
+  95% CI: [{a_ci[0]:.4f}, {a_ci[1]:.4f}]
+
+Part B (Ranking Quality):
+  Average Score: {part_b_data['score']:.4f} ({part_b_data['score'] * 100:.2f}%)
+  Valid Records: {part_b_data['valid']}/{part_b_data['total']}
+  Invalid Records: {part_b_data['invalid']}
+  95% CI: [{b_ci[0]:.4f}, {b_ci[1]:.4f}]
+"""
+
+    if positions:
+        summary_text += f"  Top-1 Hit Rate: {top_rates[1]:.2%} (95% CI: [{top_cis[1][0]:.3f}, {top_cis[1][1]:.3f}])\n"
+        summary_text += f"  Top-3 Hit Rate: {top_rates[3]:.2%} (95% CI: [{top_cis[3][0]:.3f}, {top_cis[3][1]:.3f}])\n"
+        summary_text += f"  Top-5 Hit Rate: {top_rates[5]:.2%} (95% CI: [{top_cis[5][0]:.3f}, {top_cis[5][1]:.3f}])\n"
+        summary_text += f"  Top-10 Hit Rate: {top_rates[10]:.2%} (95% CI: [{top_cis[10][0]:.3f}, {top_cis[10][1]:.3f}])\n"
+
+    summary_text += f"""
+Part C (Overall Relevance):
+  Average Score: {part_c_data['score']:.4f} ({part_c_data['score'] * 100:.2f}%)
+  Relevant Records: {part_c_data['reasonable']}
+  Irrelevant Records: {part_c_data['unreasonable']}
+  95% CI: [{c_ci[0]:.4f}, {c_ci[1]:.4f}]
+"""
+
+    ax7.text(0.05, 0.95, summary_text, transform=ax7.transAxes, fontsize=9,
+             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+    # 添加时间戳
+    fig.text(0.02, 0.02, f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}',
+             fontsize=10, style='italic', alpha=0.7)
+
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.93)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    return output_path
 
 
 def generate_report(results, output_prefix):
     """生成文本报告"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # 计算0分记录的数量
-    zero_scores = sum(1 for detail in results['part_b']['score_details'] if detail['score'] == 0)
 
     report = f"""个性化算法评估报告
 生成时间: {timestamp}
@@ -178,12 +430,10 @@ Part B 评估结果:
   有效记录: {results['part_b']['valid_records']}/{results['part_b']['total_records']}
   无效记录: {len(results['part_b']['invalid_records'])}
 
-
 Part C 评估结果:
   平均得分: {results['part_c']['average_score']:.4f} ({results['part_c']['average_score'] * 100:.2f}%)
   合理记录: {results['part_c']['counts']['合理']}
   不合理记录: {results['part_c']['counts']['不合理']}
-
 
 总结:
   Part A 合理率: {results['part_a']['average_score'] * 100:.2f}%
@@ -214,8 +464,8 @@ def main():
 
     # 计算各部分得分
     part_a_avg, part_a_counts, part_a_total = calculate_part_a_score(annotations)
-    # 修改这一行，接收6个返回值
-    part_b_avg, part_b_valid, part_b_total, part_b_invalid, part_b_details, part_b_issues = calculate_part_b_score(annotations, recommendations)
+    part_b_avg, part_b_valid, part_b_total, part_b_invalid, part_b_details, part_b_issues, positions = calculate_part_b_score(
+        annotations, recommendations)
     part_c_avg, part_c_counts, part_c_total = calculate_part_c_score(annotations)
 
     # 准备结果
@@ -229,7 +479,7 @@ def main():
             "average_score": part_b_avg,
             "valid_records": part_b_valid,
             "total_records": part_b_total,
-            "invalid_records": part_b_invalid,  # 新增
+            "invalid_records": part_b_invalid,
             "score_details": part_b_details,
             "detailed_issues": part_b_issues
         },
@@ -247,9 +497,16 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_prefix = f"evaluation_results_{timestamp}"
 
-    # 生成报告
+    # 生成文本报告
     generate_report(results, output_prefix)
 
+    # 生成可视化报告
+    try:
+        visualization_path = generate_visualization(results, positions, f"{output_prefix}_visualization.png")
+        print(f"可视化报告已保存为 {visualization_path}")
+    except Exception as e:
+        print(f"生成可视化报告时出错: {e}")
+        print("将只生成文本报告")
 
 
 if __name__ == "__main__":
