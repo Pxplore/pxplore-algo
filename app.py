@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from utils import get_logger
 from typing import Dict, Any, List
@@ -36,6 +37,15 @@ app = FastAPI(
     description="API for Pxplore",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# 添加CORS中间件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/recommend", response_model=TaskResponse)
@@ -149,7 +159,7 @@ async def student_profile(request: StudentProfileRequest):
         }
     except Exception as e:
         logger.error(f"Error starting student profiling: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to start student profiling: {str(e)}")
 
 @app.get("/student_profile/status/{task_id}", response_model=StudentProfileResponse)
 async def get_student_profile_status(task_id: str):
@@ -165,13 +175,23 @@ async def get_student_profile_status(task_id: str):
             message = "student profiling is in progress"
         return {
             "status": task_status.get("status"),
-            "language_analysis": task_status.get("language_analysis"),
-            "behavior_analysis": task_status.get("behavior_analysis"),
+            "language_analysis": task_status.get("language_analysis") or {},
+            "behavior_analysis": task_status.get("behavior_analysis") or {},
+            "finalize_analysis": task_status.get("finalize_analysis") or {},
+            "processed_episodes": task_status.get("processed_episodes") or {},
             "message": message
         }
     except Exception as e:
         logger.error(f"Error getting student profiling status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # 返回一个安全的错误响应而不是抛出异常
+        return {
+            "status": "failed",
+            "language_analysis": {},
+            "behavior_analysis": {},
+            "finalize_analysis": {},
+            "processed_episodes": {},
+            "message": f"Error: {str(e)}"
+        }
 
 def start():
     """

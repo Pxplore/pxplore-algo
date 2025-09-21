@@ -10,7 +10,7 @@ collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.lecture_snippets
 
 def add_snippet(snippet):
     if "children" not in snippet or len(snippet["children"]) == 0:
-        print(f"Snippet has no children: {snippet["module_name"]}")
+        print(f"Snippet has no children: {snippet['module_name']}")
         return None
 
     existing_snippets = get_snippets_by_module(snippet["module_id"])
