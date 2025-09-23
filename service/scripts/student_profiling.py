@@ -145,8 +145,7 @@ class StudentProfiling:
             "error": task.get("error"),
             "language_analysis": task.get("language_analysis"),
             "behavior_analysis": task.get("behavior_analysis"),
-            "finalize_analysis": task.get("finalize_analysis"),
-            "processed_episodes": task.get("processed_episodes")
+            "finalize_analysis": task.get("finalize_analysis")
         }
 
 if __name__ == "__main__":

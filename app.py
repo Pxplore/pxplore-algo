@@ -8,6 +8,7 @@ from service.scripts.snippet_recommender import SnippetRecommender
 from service.scripts.style_adaptation import StyleAdapter
 from service.scripts.session_controller import SessionController
 from service.scripts.student_profiling import StudentProfiling
+from service.scripts.experiment import ExperimentController
 import json
 from base import *
 
@@ -17,14 +18,16 @@ snippet_recommender = None
 style_adapter = None
 session_controller = None
 student_profiling = None
+experiment_controller = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global snippet_recommender, style_adapter, session_controller, student_profiling
+    global snippet_recommender, style_adapter, session_controller, student_profiling, experiment_controller
     try:
         snippet_recommender = SnippetRecommender()
         style_adapter = StyleAdapter()
         session_controller = SessionController()
         student_profiling = StudentProfiling()
+        experiment_controller = ExperimentController()
         logger.info("All services initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}")
@@ -167,10 +170,32 @@ async def get_student_profile_status(task_id: str):
             "status": task_status.get("status"),
             "language_analysis": task_status.get("language_analysis"),
             "behavior_analysis": task_status.get("behavior_analysis"),
+            "finalize_analysis": task_status.get("finalize_analysis"),
             "message": message
         }
     except Exception as e:
         logger.error(f"Error getting student profiling status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/experiment", response_model=ExperimentRequest)
+async def run_experiment(request: ExperimentRequest):
+    try:
+        task_id = await experiment_controller.run(request.interaction_history, request.src_snippet_id)
+        return {
+            "task_id": task_id,
+            "message": "experiment started successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error running experiment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/experiment/status/{task_id}", response_model=ExperimentResponse)
+async def get_experiment_status(task_id: str):
+    try:
+        task_status = await experiment_controller.get_experiment_task(task_id)
+        return task_status
+    except Exception as e:
+        logger.error(f"Error getting experiment status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 def start():

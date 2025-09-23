@@ -53,5 +53,12 @@ class StudentProfileResponse(BaseModel):
     language_analysis: Dict[str, Any]
     behavior_analysis: Dict[str, Any]
     finalize_analysis: Dict[str, Any]
-    processed_episodes: Dict[str, Any]
     message: str
+
+class ExperimentRequest(BaseModel):
+    interaction_history: Dict[str, Any]
+    src_snippet_id: str
+
+class ExperimentResponse(BaseModel):
+    status: str
+    session_id: str
