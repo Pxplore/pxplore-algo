@@ -9,7 +9,7 @@ results = []
 for item in student_profile: 
     profile = item["finalize_analysis"]
     interaction_history = [interaction["page_script"] for interaction in item["behavioral_data"]["page_interactions"]]
-    title = item["behavioral_data"]["meta"]["module_id"]
+    title = f'{item["behavioral_data"]["meta"]["student_id"]}_{item["behavioral_data"]["meta"]["session_id"]}_{item["behavioral_data"]["meta"]["module_id"]}'
     
     response = requests.post("http://localhost:8899/recommend", json={"student_profile": profile, "interaction_history": "\n\n".join(interaction_history), "title": title})
     task_id = response.json()["task_id"]
@@ -19,7 +19,7 @@ for item in student_profile:
         response = requests.get(f"http://localhost:8899/recommend/status/{task_id}")
         if response.json()["status"] == "completed" or  response.json()["status"] == "failed":
             break
-        time.sleep(5)
+        time.sleep(3)
 
     print(profile)
     print(response.json()["recommend_reason"])
@@ -34,7 +34,6 @@ for item in student_profile:
     })
 
     json.dump(results, open("./service/scripts/buffer/result_recommendation.json", "w"), indent=4, ensure_ascii=False)
-    exit()
 
 print(f"Saved {len(results)} student profiles")
 

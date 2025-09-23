@@ -45,7 +45,7 @@ class SnippetRecommender:
             parent_service="Pxplore",
             parent_job_id=None,
             use_cache=True,
-            model=model,
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": self.system_prompt}, 
                 {"role": "user", "content": user_prompt}
@@ -55,7 +55,7 @@ class SnippetRecommender:
         response = OPENAI_SERVICE.parse_json_response(response)
         return response 
     
-    async def process_recommendation(self, task_id: str, student_profile: Dict[str, Any], interaction_history: str, title: str = None, model: str = None):
+    async def process_recommendation(self, task_id: str, student_profile: Dict[str, Any], interaction_history: str, title: str = None, model: str = "gpt-4o"):
 
         try:        
             candidates = self.retriever.search(interaction_history, title)
@@ -72,7 +72,7 @@ class SnippetRecommender:
         except Exception as e:
             update_task(task_id, {"status": STATUS_FAILED, "error": str(e)})
 
-    async def run(self, student_profile: Dict[str, Any], interaction_history: str, title: str = None, model: str = None) -> str:
+    async def run(self, student_profile: Dict[str, Any], interaction_history: str, title: str = None, model: str = "gpt-4o") -> str:
         """
         Two-stage recommendation algorithm:
         1. First stage: Use HybridRetriever to retrieve Top-K candidates;
