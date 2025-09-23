@@ -6,8 +6,9 @@ from typing import Dict, Any
 collection = MongoClient(MONGO.HOST, MONGO.PORT).pxplore.tasks
 
 def add_task(task):
-    existing_task = collection.find_one({"task": task.get("task"), "student_profile": task.get("student_profile")})
+    existing_task = collection.find_one({"task": task.get("task"), "title": task.get("title")})
     if existing_task:
+        print("Task already exists")
         return str(existing_task["_id"])
     _id = collection.insert_one(task).inserted_id
     return str(_id)

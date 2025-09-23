@@ -246,13 +246,8 @@ class OPENAI_SERVICE:
 	@staticmethod
 	def parse_json_response(response: str):
 		def _strip_code_fences(s: str) -> str:
-			s = s.strip()
-			if s.startswith("```json"):
-				s = s[len("```json"):].strip()
-				return s[:-3].strip() if s.endswith("```") else s
-			if s.startswith("```"):
-				s = s[len("```"):].strip()
-				return s[:-3].strip() if s.endswith("```") else s
+			if "```json" in s:
+				s = s.split("```json")[1].split("```")[0]
 			return s
 
 		def _remove_trailing_commas(s: str) -> str:
