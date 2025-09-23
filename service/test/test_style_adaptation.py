@@ -5,7 +5,7 @@ import json
 student_profile = json.load(open("./service/scripts/buffer/processed_student_profiles.json", "r"))
 print(f"Found {len(student_profile)} student profiles")
 
-recommendation_results = json.load(open("./model/data/test/steering_4o.json", "r"))
+recommendation_results = json.load(open("./model/data/test/prompt_4o.json", "r"))
 
 results = []
 for profile, recommend_content in zip(student_profile, recommendation_results): 
