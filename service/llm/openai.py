@@ -247,7 +247,33 @@ class OPENAI_SERVICE:
 	def parse_json_response(response: str):
 		def _strip_code_fences(s: str) -> str:
 			if "```json" in s:
-				s = s.split("```json")[1].split("```")[0]
+				s = s.split("```json")[1]
+			if "```" in s:
+				s = s.split("```")[0]
+			return s
+
+		def _fix_escaped_keys(s: str) -> str:
+			"""Fix incorrectly escaped quotes in JSON keys like \\\"key\": -> \"key\": """
+			import re
+			# Fix escaped quotes at the beginning of keys
+			s = re.sub(r'\\+"([^"]+)":\s*{', r'"\1": {', s)
+			s = re.sub(r'\\+"([^"]+)":\s*\[', r'"\1": [', s)
+			s = re.sub(r'\\+"([^"]+)":\s*"', r'"\1": "', s)
+			s = re.sub(r'\\+"([^"]+)":\s*([0-9])', r'"\1": \2', s)
+			return s
+
+		def _fix_missing_quotes(s: str) -> str:
+			"""Fix missing quotes around string values"""
+			import re
+			
+			# Fix pattern: "reason": 中文内容" -> "reason": "中文内容"
+			# Look for cases where there's no opening quote but there is a closing quote
+			s = re.sub(r'("reason":\s*)([^"{\[\d][^"]*)"', r'\1"\2"', s)
+			
+			# Fix pattern: "reason":中文内容" -> "reason": "中文内容"
+			# Handle cases where there's no space and no opening quote
+			s = re.sub(r'("reason":)([^"{\[\d\s][^"]*)"', r'\1 "\2"', s)
+			
 			return s
 
 		def _remove_trailing_commas(s: str) -> str:
@@ -324,10 +350,14 @@ class OPENAI_SERVICE:
 			s = _strip_code_fences(s)
 			# 统一全角/智能引号
 			s = (s.replace('\ufeff', '')  # 去 BOM
-				.replace('“', '"').replace('”', '"')
+				.replace('"', '"').replace('"', '"')
 				.replace('„', '"').replace('‟', '"')
-				.replace('’', "'").replace('‘', "'"))
+				.replace(''', "'").replace(''', "'"))
 			s = s.strip()
+			
+			# Apply fixes in order
+			s = _fix_escaped_keys(s)
+			s = _fix_missing_quotes(s)
 			s = _remove_trailing_commas(s)
 			s = _escape_inner_quotes_in_strings(s)
 			return s
@@ -347,7 +377,7 @@ class OPENAI_SERVICE:
 				try:
 					return ast.literal_eval(pyish)
 				except Exception:
-					return {"error": "ParseError", "response": fixed}
+					return {"error": "ParseError", "response": fixed, "original": response}
 
 if __name__=="__main__":
 	OPENAI_SERVICE.logger.warning("STARTING LLM SERVICE")

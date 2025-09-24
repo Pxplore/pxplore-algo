@@ -22,11 +22,6 @@ try:
         help="Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
     )
     parser.add_argument(
-        "--zhipu_api_key",
-        default=get_env_or_default("ZHIPU_API_KEY", None),
-        help="Set ZHIPU service api_key",
-    )
-    parser.add_argument(
         "--openai_api_key",
         default=get_env_or_default("OPENAI_API_KEY", None),
         help="Set OPENAI service api_key",
@@ -41,6 +36,16 @@ try:
         default=get_env_or_default("VOLCARK_API_KEY", None),
         help="Set VOLCARK service api_key",
     )
+    parser.add_argument(
+        "--anthropic_api_key",
+        default=get_env_or_default("ANTHROPIC_API_KEY", None),
+        help="Set ANTHROPIC service api_key",
+    )
+    parser.add_argument(
+        "--anthropic_baseurl",
+        default=get_env_or_default("ANTHROPIC_BASE_URL", None),
+        help="Set ANTHROPIC service baseurl",
+    )
     args = parser.parse_args()
 except SystemExit:
     # If argparse fails (likely due to being called in a context where
@@ -48,10 +53,11 @@ except SystemExit:
     # variables with fallbacks directly.
     args = argparse.Namespace(
         log=get_env_or_default("LOG", "INFO"),
-        zhipu_api_key=get_env_or_default("ZHIPU_API_KEY", None),
         openai_api_key=get_env_or_default("OPENAI_API_KEY", None),
         openai_baseurl=get_env_or_default("OPENAI_BASEURL", None),
         volcark_api_key=get_env_or_default("VOLCARK_API_KEY", None),
+        anthropic_api_key=get_env_or_default("ANTHROPIC_API_KEY", None),
+        anthropic_baseurl=get_env_or_default("ANTHROPIC_BASE_URL", None),
     )
 
 
@@ -70,10 +76,9 @@ def masked_value_color(val, is_api=False):
 
 # Print masked values
 print("Log level:         ", masked_value_color(args.log))
-print("ZHIPU API Key:     ", masked_value_color(args.zhipu_api_key, is_api=True))
 print("OpenAI API Key:    ", masked_value_color(args.openai_api_key, is_api=True))
-print("OpenAI Base URL:   ", masked_value_color(args.openai_baseurl))
 print("Volcark API Key:   ", masked_value_color(args.volcark_api_key, is_api=True))
+print("Anthropic API Key: ", masked_value_color(args.anthropic_api_key, is_api=True))
 
 
 class MONGO:
@@ -81,9 +86,6 @@ class MONGO:
 	PORT = 27117
 
 class LLM:
-	class ZHIPU:
-		API_KEY = args.zhipu_api_key
-
 	class OPENAI:
 		API_KEY = args.openai_api_key
 		BASE_URL = args.openai_baseurl
@@ -93,6 +95,10 @@ class LLM:
 		MODEL_NAME_MAPPING = {
 			"deepseek-r1": "ep-20250327161916-586pz"
 		}
+		
+	class ANTHROPIC:
+		API_KEY = args.anthropic_api_key
+		BASE_URL = args.anthropic_baseurl
 
 class EMBED:
 	MODEL = "baai/bge-large-zh-v1.5"
