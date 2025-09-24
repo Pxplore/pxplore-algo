@@ -56,7 +56,7 @@ class StudentProfileResponse(BaseModel):
     message: str
 
 class ExperimentRequest(BaseModel):
-    interaction_history: Dict[str, Any]
+    interaction_history: List[str]
     src_snippet_id: str
 
 class ExperimentResponse(BaseModel):

@@ -42,7 +42,7 @@ app = FastAPI(
 )
 
 @app.post("/recommend", response_model=TaskResponse)
-async def snippet_recommender(request: RecommendRequest):
+async def recommendation(request: RecommendRequest):
     if snippet_recommender is None:
         raise HTTPException(status_code=503, detail="SnippetRecommender service not ready")
     try:
@@ -177,7 +177,7 @@ async def get_student_profile_status(task_id: str):
         logger.error(f"Error getting student profiling status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/experiment", response_model=ExperimentRequest)
+@app.post("/experiment", response_model=TaskResponse)
 async def run_experiment(request: ExperimentRequest):
     try:
         task_id = await experiment_controller.run(request.interaction_history, request.src_snippet_id)

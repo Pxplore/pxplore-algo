@@ -67,7 +67,6 @@ class StyleAdapter:
 			recommend_summary, recommend_content = self.parse_recommended_snippet(recommend_id)
 			adaptation_suggestion = await self.process_suggestion(task_id, history_content, recommend_summary, recommend_reason)
 			start_speech, end_speech = await self.process_transition(task_id, recommend_content, adaptation_suggestion)
-			system_prompt = self.prompt_text.replace("[recommend_content]", str(recommend_content.split("\n\n"))).replace("[adaptation_suggestion]", adaptation_suggestion)
 			scripts = recommend_content.split("\n\n")
 			grouped_content = [
 				"\n\n".join(scripts[i:i+3])
@@ -113,6 +112,7 @@ class StyleAdapter:
 		})
 
 		asyncio.create_task(self.process_adaptation(task_id, history_content, recommend_id, recommend_reason))
+		await asyncio.sleep(0)
 
 		return str(task_id)
 	
