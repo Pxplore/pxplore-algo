@@ -38,7 +38,6 @@ class VOLCARK(BASE_LLM_CACHE):
 		self.llm_client = Ark(
 			api_key=api_key, 
 			timeout=httpx.Timeout(timeout=1800),
-			max_output_tokens=32768,
 			**kwargs
 		)
 		self.cost = dict()
