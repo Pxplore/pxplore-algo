@@ -25,10 +25,10 @@ def calculate_alignment_scores(data: List[Dict[str, Any]]) -> Dict[str, Dict[str
     
     # 初始化统计变量
     dimension_stats = {
-        'long_term_objective': {'total': 0, 'aligned': 0},
-        'short_term_objective': {'total': 0, 'aligned': 0},
-        'implicit_motivation': {'total': 0, 'aligned': 0},
-        'explicit_motivation': {'total': 0, 'aligned': 0}
+        'long_term_objective': {'total': 0, 'aligned': 0, 'weighted_reward': 0.0},
+        'short_term_objective': {'total': 0, 'aligned': 0, 'weighted_reward': 0.0},
+        'implicit_motivation': {'total': 0, 'aligned': 0, 'weighted_reward': 0.0},
+        'explicit_motivation': {'total': 0, 'aligned': 0, 'weighted_reward': 0.0}
     }
     
     # 遍历每个item
@@ -44,6 +44,13 @@ def calculate_alignment_scores(data: List[Dict[str, Any]]) -> Dict[str, Dict[str
                         dimension_stats[dimension]['total'] += 1
                         if objective['is_aligned']:
                             dimension_stats[dimension]['aligned'] += 1
+                        # 置信度加权奖励：is_aligned * confidence
+                        try:
+                            confidence = float(objective.get('confidence', 1.0))
+                        except (TypeError, ValueError):
+                            confidence = 1.0
+                        if objective['is_aligned']:
+                            dimension_stats[dimension]['weighted_reward'] += confidence
     
     # 计算平均值
     results = {}
@@ -54,14 +61,16 @@ def calculate_alignment_scores(data: List[Dict[str, Any]]) -> Dict[str, Dict[str
                 'alignment_rate': alignment_rate,
                 'aligned_count': stats['aligned'],
                 'total_count': stats['total'],
-                'percentage': f"{alignment_rate * 100:.2f}%"
+                'percentage': f"{alignment_rate * 100:.2f}%",
+                'weighted_reward': stats['weighted_reward']
             }
         else:
             results[dimension] = {
                 'alignment_rate': 0.0,
                 'aligned_count': 0,
                 'total_count': 0,
-                'percentage': "0.00%"
+                'percentage': "0.00%",
+                'weighted_reward': 0.0
             }
     
     return results
@@ -77,16 +86,19 @@ def print_results(results: Dict[str, Dict[str, Any]]):
         print(f"  对齐率: {stats['percentage']}")
         print(f"  对齐数量: {stats['aligned_count']}")
         print(f"  总数量: {stats['total_count']}")
+        print(f"  置信度加权奖励: {stats['weighted_reward']:.4f}")
     
     # 计算总体平均对齐率
     total_aligned = sum(stats['aligned_count'] for stats in results.values())
     total_count = sum(stats['total_count'] for stats in results.values())
+    total_weighted_reward = sum(stats['weighted_reward'] for stats in results.values())
     
     if total_count > 0:
         overall_rate = total_aligned / total_count
         print(f"\n总体平均对齐率: {overall_rate * 100:.2f}%")
         print(f"总体对齐数量: {total_aligned}")
         print(f"总体总数量: {total_count}")
+        print(f"总体置信度加权奖励: {total_weighted_reward:.4f}")
     
     print("="*60)
 
