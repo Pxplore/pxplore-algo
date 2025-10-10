@@ -41,7 +41,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-@app.post("/recommend", response_model=TaskResponse)
+@app.post("/plan", response_model=TaskResponse)
 async def recommendation(request: RecommendRequest):
     if snippet_recommender is None:
         raise HTTPException(status_code=503, detail="SnippetRecommender service not ready")
@@ -55,7 +55,7 @@ async def recommendation(request: RecommendRequest):
         logger.error(f"Error starting recommendation algorithm: {e}, {request}")
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/recommend/status/{task_id}", response_model=RecommendResponse)
+@app.get("/plan/status/{task_id}", response_model=RecommendResponse)
 async def get_recommendation_status(task_id: str):
     if snippet_recommender is None:
         raise HTTPException(status_code=503, detail="SnippetRecommender service not ready")

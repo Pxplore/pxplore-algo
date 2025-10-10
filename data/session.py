@@ -22,14 +22,3 @@ def get_all_sessions():
 
 def update_session(session_id, session):
     collection.update_one({"_id": ObjectId(session_id)}, {"$set": session})
-
-if __name__ == "__main__":
-    
-    add_session({
-        "student_profile": {
-            "bloom_level": "分析",
-            "learning_status": "该学生具备较强的问题意识，能主动区分相关概念并探究系统机制，表现出较高的理解与分析能力。",
-            "interaction_history": []
-        },
-        "recommend_snippet_id": "688314455286c4247fa68ec8"
-    })
