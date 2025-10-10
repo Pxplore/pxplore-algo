@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 BASE_DIR = Path(__file__).parent
 
-prompt_text = open(BASE_DIR / "eval_adaptation.txt", "r", encoding="utf-8").read()
+prompt_text = open(BASE_DIR / "../prompts/eval_adaptation.txt", "r", encoding="utf-8").read()
 history_contents = json.load(open(BASE_DIR / ".." / "buffer" / "result_recommendation.json", "r", encoding="utf-8"))
 result_adaptation = json.load(open(BASE_DIR / ".." / "buffer" / "result_style_adaptation.json", "r", encoding="utf-8"))
 

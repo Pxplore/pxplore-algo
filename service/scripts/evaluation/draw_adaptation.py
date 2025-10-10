@@ -27,11 +27,22 @@ def read_json_array(path: str) -> List[dict]:
 # Seven adaptation dimensions + Overall
 DIMENSIONS = ["CC", "PE", "PS", "CE", "MA", "Overall"]
 
+# Mapping of short dimension codes to full display names
+DIMENSION_NAME_MAP = {
+    "CC": "Contextual Coherence (CC)",
+    "PE": "Personalization & Empathy (PE)",
+    "PS": "Pedagogical Scaffolding (PS)",
+    "CE": "Conciseness & Efficiency (CE)",
+    "MA": "Motivational Appeal (MA)",
+    "Avg": "Overall",
+    "Overall": "Overall",
+}
+
 # Keys present in the JSON mapped to pretty model names
 MODEL_KEYS = {
     "evaluation_gpt-4o": "GPT-4o",
-    "evaluation_deepseek-r1": "Deepseek-R1",
-    "evaluation_claude-3-7-sonnet": "Claude-3.7-Sonnet",
+    "evaluation_deepseek-r1": "DS-R1",
+    "evaluation_claude-3-7-sonnet": "Claude-3.7",
     "human_evaluation": "Human",
 }
 
@@ -292,7 +303,7 @@ def print_detailed_scores_table(models_eval: Dict[str, Dict[str, float]], models
     print("\nLegend:")
     print("- Overall Improvement: Adaptation - Original performance")
     print("- vs Human: How much better/worse than human improvement")
-    print("- Average (Auto): Average of GPT-4o, Deepseek-R1, Claude-3.7-Sonnet")
+    print("- Average (Auto): Average of GPT-4o, DS-R1, Claude-3.7")
     print("\n" + "="*80)
 
 
@@ -304,26 +315,26 @@ def make_grouped_bar_original_vs_adaptation(models_adapt: Dict[str, Dict[str, fl
     import matplotlib.pyplot as plt
     import numpy as np
 
-    model_order = ["Human", "GPT-4o", "Claude-3.7-Sonnet", "Deepseek-R1"]
+    model_order = ["Human", "GPT-4o", "Claude-3.7", "DS-R1"]
 
     # Colors
     adapt_fill_colors = {
         "Human": "#fadad5",
         "GPT-4o": "#fcd7ac",
-        "Deepseek-R1": "#b0e3e6",
-        "Claude-3.7-Sonnet": "#d1cee3",
+        "DS-R1": "#b0e3e6",
+        "Claude-3.7": "#d1cee3",
     }
     edge_colors = {
         "Human": "#e6c4bc",
         "GPT-4o": "#eea764",
-        "Deepseek-R1": "#8dd3d8",
-        "Claude-3.7-Sonnet": "#b8b3d1",
+        "DS-R1": "#8dd3d8",
+        "Claude-3.7": "#b8b3d1",
     }
     orig_colors = {
         "Human": "#fef7f5",
         "GPT-4o": "#fef3e6",
-        "Deepseek-R1": "#f0fdfe",
-        "Claude-3.7-Sonnet": "#faf9fd",
+        "DS-R1": "#f0fdfe",
+        "Claude-3.7": "#faf9fd",
     }
     hatch_pattern = "//"
 
@@ -353,7 +364,9 @@ def make_grouped_bar_original_vs_adaptation(models_adapt: Dict[str, Dict[str, fl
 
     ax.set_ylabel('Average Score')
     ax.set_xticks(x)
-    ax.set_xticklabels(labels)
+    # Display full dimension names on x-axis
+    display_labels = [DIMENSION_NAME_MAP.get(label, label) for label in labels]
+    ax.set_xticklabels(display_labels)
     ax.set_ylim(2.5, 5)
     ax.grid(axis='y', linestyle='--', alpha=0.4)
     ax.margins(x=0.02)
@@ -373,6 +386,215 @@ def make_grouped_bar_original_vs_adaptation(models_adapt: Dict[str, Dict[str, fl
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fig.tight_layout()
     fig.savefig(out_path, format='pdf')
+    plt.close(fig)
+
+
+def collect_raw_scores_with_human(records: List[dict], annotation_records: List[dict], 
+                                  setting: str, annotation_setting: str) -> Dict[str, Dict[str, List[float]]]:
+    """
+    收集原始分数（包括Human数据），用于绘制小提琴图
+    小提琴图
+   
+    """
+    individual_dims = ["CC", "PE", "PS", "CE", "MA"]
+    raw_data: Dict[str, Dict[str, List[float]]] = {}
+    
+    # 收集自动化模型的数据
+    for raw_key, model in MODEL_KEYS.items():
+        if raw_key == "human_evaluation":
+            continue
+        raw_data[model] = {dim: [] for dim in individual_dims}
+    
+    for rec in records:
+        for raw_key, model in MODEL_KEYS.items():
+            if raw_key == "human_evaluation":
+                continue
+            eval_block = rec.get(raw_key) or {}
+            data = (eval_block.get(setting) or {}) if isinstance(eval_block, dict) else {}
+            for dim in individual_dims:
+                entry = data.get(dim) or {}
+                score = entry.get("score")
+                if isinstance(score, (int, float)):
+                    raw_data[model][dim].append(float(score))
+    
+    # 收集Human数据
+    raw_data["Human"] = {dim: [] for dim in individual_dims}
+    for rec in annotation_records:
+        for dim in individual_dims:
+            field_name = f"part_c_{annotation_setting}_{dim}"
+            score = rec.get(field_name)
+            if isinstance(score, (int, float)):
+                raw_data["Human"][dim].append(float(score))
+    
+    # 计算Overall/Avg
+    for model in raw_data.keys():
+        raw_data[model]["Avg"] = []
+        # 找到最小记录数
+        dim_counts = [len(raw_data[model][dim]) for dim in individual_dims if raw_data[model][dim]]
+        if dim_counts:
+            num_records = min(dim_counts)
+            for i in range(num_records):
+                scores = [raw_data[model][dim][i] for dim in individual_dims if i < len(raw_data[model][dim])]
+                if scores:
+                    raw_data[model]["Avg"].append(sum(scores) / len(scores))
+    
+    return raw_data
+
+
+def make_violin_plot_adaptation_vs_original(raw_adapt: Dict[str, Dict[str, List[float]]], 
+                                             raw_orig: Dict[str, Dict[str, List[float]]],
+                                             out_path: str) -> None:
+    """创建小提琴图对比Adaptation vs Original
+
+    """
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    dimensions = ["CC", "PE", "PS", "CE", "MA", "Avg"]
+    model_order = ["Human", "GPT-4o", "Claude-3.7", "DS-R1"]
+    
+  
+    colors = {
+        "Human": "#C72324",           # 深红
+        "GPT-4o": "#FEA983",          # 浅橙
+        "Claude-3.7": "#9AC9DB",  # 浅蓝
+        "DS-R1": "#2978B5",     # 深蓝
+    }
+    
+    fig, axes = plt.subplots(2, 3, figsize=(18, 6.5))
+    axes = axes.flatten()
+    
+    for idx, dim in enumerate(dimensions):
+        ax = axes[idx]
+        
+        # 为每个模型准备数据
+        positions = []
+        all_data = []
+        all_colors = []
+        # 组标签与中心（每个模型一组：Adaptation vs Original）
+        group_centers = []
+        group_labels = []
+        
+        pos = 0
+        for model in model_order:
+            model_positions = []
+            # Adaptation数据
+            adapt_data = raw_adapt[model].get(dim, [])
+            if adapt_data:
+                all_data.append(adapt_data)
+                positions.append(pos)
+                all_colors.append(colors[model])
+                model_positions.append(pos)
+                pos += 1
+            
+            # Original数据
+            orig_data = raw_orig[model].get(dim, [])
+            if orig_data:
+                all_data.append(orig_data)
+                positions.append(pos)
+                all_colors.append(colors[model])
+                model_positions.append(pos)
+                pos += 1
+            
+            # 本模型组的中心点与标签
+            if model_positions:
+                center = sum(model_positions) / len(model_positions)
+                group_centers.append(center)
+                group_labels.append(f"{model}")
+
+            pos += 0.3  # 模型之间的间距
+        
+        # 绘制小提琴图
+        if all_data:
+            parts = ax.violinplot(all_data, positions=positions, widths=0.7,
+                                 showmeans=True, showmedians=True)
+            
+            # 为每个小提琴着色
+            for pc, color in zip(parts['bodies'], all_colors):
+                pc.set_facecolor(color)
+                pc.set_alpha(0.7)
+                pc.set_edgecolor('black')
+                pc.set_linewidth(1)
+        
+        ax.set_title(DIMENSION_NAME_MAP.get(dim, dim), fontsize=20, fontweight='bold')
+        # 使用每对小提琴的中心作为一个刻度，仅显示一条合并标签
+        ax.set_xticks(group_centers)
+        ax.set_xticklabels(group_labels, fontsize=18, rotation=0, ha='center')
+        ax.set_ylim(2.5, 5)
+        ax.grid(axis='y', linestyle='--', alpha=0.4)
+        ax.set_ylabel('Score', fontsize=18)
+    
+    fig.tight_layout()
+    fig.savefig(out_path, format='pdf', bbox_inches='tight')
+    plt.close(fig)
+
+
+def make_violin_plot_single_setting(raw_data: Dict[str, Dict[str, List[float]]], 
+                                     out_path: str, 
+                                     title: str) -> None:
+    """创建单一设置的小提琴图（只有Adaptation或只有Original）
+    
+    每个维度展示4个模型的数据分布
+    """
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    dimensions = ["CC", "PE", "PS", "CE", "MA", "Avg"]
+    model_order = ["Human", "GPT-4o", "Claude-3.7", "DS-R1"]
+    
+    
+    colors = {
+        "Human": "#C72324",           # 深红
+        "GPT-4o": "#FEA983",          # 浅橙
+        "Claude-3.7": "#9AC9DB",  # 浅蓝
+        "DS-R1": "#2978B5",     # 深蓝
+    }
+    
+    fig, axes = plt.subplots(2, 3, figsize=(16, 8))
+    axes = axes.flatten()
+    
+    for idx, dim in enumerate(dimensions):
+        ax = axes[idx]
+        
+        # 准备数据
+        positions = []
+        all_data = []
+        all_colors = []
+        labels = []
+        
+        for i, model in enumerate(model_order):
+            data = raw_data[model].get(dim, [])
+            if data:
+                all_data.append(data)
+                positions.append(i)
+                all_colors.append(colors[model])
+                # 截断模型名称以节省空间
+                label = model if len(model) <= 10 else model[:8] + ".."
+                labels.append(label)
+        
+        # 绘制小提琴图
+        if all_data:
+            parts = ax.violinplot(all_data, positions=positions, widths=0.7,
+                                 showmeans=True, showmedians=True)
+            
+            # 为每个小提琴着色
+            for pc, color in zip(parts['bodies'], all_colors):
+                pc.set_facecolor(color)
+                pc.set_alpha(0.8)
+                pc.set_edgecolor('black')
+                pc.set_linewidth(1.2)
+        
+        ax.set_title(DIMENSION_NAME_MAP.get(dim, dim), fontsize=20, fontweight='bold')
+        ax.set_xticks(positions)
+        ax.set_xticklabels(labels, fontsize=14, rotation=30, ha='right')
+        ax.set_ylim(2.5, 5)
+        ax.grid(axis='y', linestyle='--', alpha=0.4)
+        ax.set_ylabel('Score', fontsize=16)
+    
+    fig.tight_layout()
+    fig.savefig(out_path, format='pdf', bbox_inches='tight')
     plt.close(fig)
 
 
@@ -398,9 +620,28 @@ def main():
     # Print detailed analysis tables
     print_detailed_scores_table(models_adaptation, models_original)
 
-    out_pdf = os.path.join(repo_root, "service", "scripts", "evaluation", "result_adaptation.pdf")
-    make_grouped_bar_original_vs_adaptation(models_adaptation, models_original, DIMENSIONS, out_pdf)
-    print(f"\nSaved bar chart to: {out_pdf}")
+    # out_pdf = os.path.join(repo_root, "service", "scripts", "evaluation", "result_adaptation.pdf")
+    # make_grouped_bar_original_vs_adaptation(models_adaptation, models_original, DIMENSIONS, out_pdf)
+    # print(f"\nSaved bar chart to: {out_pdf}")
+    
+    # 收集原始分数数据（包括Human）
+    raw_adapt = collect_raw_scores_with_human(records, annotation_records, "adaptation", "adapted")
+    raw_orig = collect_raw_scores_with_human(records, annotation_records, "original", "initial")
+    
+    # 小提琴图1 (Violin Plot) - 展示Adaptation vs Original的对比
+    out_violin = os.path.join(repo_root, "service", "scripts", "evaluation", "result_adaptation.pdf")
+    make_violin_plot_adaptation_vs_original(raw_adapt, raw_orig, out_violin)
+    print(f"Saved violin plot (Adaptation vs Original) to: {out_violin}")
+    
+    # 小提琴图2 - 只展示Adaptation
+    # out_violin_adapt = os.path.join(repo_root, "service", "scripts", "evaluation", "result_adaptation_violin_adapt_only.pdf")
+    # make_violin_plot_single_setting(raw_adapt, out_violin_adapt, "Adaptation Score Distribution")
+    # print(f"Saved violin plot (Adaptation only) to: {out_violin_adapt}")
+    
+    # 小提琴图3 - 只展示Original
+    # out_violin_orig = os.path.join(repo_root, "service", "scripts", "evaluation", "result_adaptation_violin_original_only.pdf")
+    # make_violin_plot_single_setting(raw_orig, out_violin_orig, "Original Score Distribution")
+    # print(f"Saved violin plot (Original only) to: {out_violin_orig}")
 
 
 if __name__ == "__main__":

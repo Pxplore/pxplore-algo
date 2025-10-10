@@ -59,10 +59,10 @@ def create_userstudy_bar_chart():
     width = 0.35
     
     # Colors
-    pxplore_color = "#b0e3e6"  
-    baseline_color = "#d1cee3"  
-    pxplore_edge = "#8dd3d8" 
-    baseline_edge = "#b8b3d1"
+    pxplore_color = "#C72324"  
+    baseline_color = "#FEA983"  
+    pxplore_edge = "#000" 
+    baseline_edge = "#000"
     
     # Create bars
     bars1 = ax.bar(x - width/2, pxplore_scores, width, 

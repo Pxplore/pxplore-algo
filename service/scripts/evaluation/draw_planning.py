@@ -23,28 +23,37 @@ ndcg_scores = {
 }
 
 # Unified color scheme
-colors = ["#d1cee3", "#fadad5", "#b0e3e6"]
+colors = ["#9AC9DB", "#2978B5", "#C72324"]
 
-# ---------- First PDF: Precision@1 Chart ----------
-fig1, ax1 = plt.subplots(1, 1, figsize=(5, 2))
+fig, (ax1, ax2) = plt.subplots(
+    1,
+    2,
+    figsize=(8, 2.5),
+    constrained_layout=True,
+    gridspec_kw={"width_ratios": [1, 2.5], "wspace": -0.5}
+)
 
+# ---------- Left: Precision@1 Chart ----------
 # Horizontal bar chart for Precision@1
 bar_positions = [0,1,2]
-ax1.barh(bar_positions, precision, color=colors, alpha=1, height=0.5)
+ax1.barh(
+    bar_positions,
+    precision,
+    color=colors,
+    alpha=1,
+    height=0.5,
+    edgecolor="black",
+    linewidth=1,
+)
 ax1.set_yticks(bar_positions)
 ax1.set_yticklabels(models)
 ax1.set_xlabel("Precision")
 ax1.set_xlim(0.45, 0.6)
+
 # ax1.set_title("Precision@1")
+ax1.grid(True, axis="x", linestyle="--", alpha=0.4)
 
-
-plt.tight_layout()
-output_path = os.path.join(os.path.dirname(__file__), "result_decision_precision.pdf")
-plt.savefig(output_path)
-plt.close()
-
-# ---------- Second PDF: NDCG Chart ----------
-fig2, ax2 = plt.subplots(1, 1, figsize=(5, 3))
+# ---------- Right: NDCG Chart ----------
 
 # Line chart for NDCG scores
 for i, (model, scores) in enumerate(ndcg_scores.items()):
@@ -53,9 +62,9 @@ ax2.set_xlabel("k")
 ax2.set_ylabel("NDCG@k")
 ax2.set_ylim(0.78, 0.9)
 # ax2.set_title("Normalized Discounted Cumulative Gain (NDCG)")
+ax2.grid(True, linestyle="--", alpha=0.4)
 ax2.legend(loc="upper right")
 
-plt.tight_layout()
-output_path = os.path.join(os.path.dirname(__file__), "result_decision_ndcg.pdf")
+output_path = os.path.join(os.path.dirname(__file__), "result_decision.pdf")
 plt.savefig(output_path)
 plt.close()

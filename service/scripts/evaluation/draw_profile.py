@@ -11,11 +11,11 @@ from scipy.stats import pearsonr
 
 # Set global font sizes
 matplotlib.rcParams.update({
-    'font.size': 20,
-    'axes.titlesize': 16,
-    'axes.labelsize': 16,
+    'font.size': 12,
+    'axes.titlesize': 10,
+    'axes.labelsize': 14,
     'xtick.labelsize': 20,
-    'ytick.labelsize': 16,
+    'ytick.labelsize': 12,
     'legend.fontsize': 18,
 })
 
@@ -364,6 +364,84 @@ def make_grouped_bar_single_panel_with_baseline(models_eval: Dict[str, Dict[str,
     fig.savefig(out_path, format='pdf')
     plt.close(fig)
 
+def make_heatmap_comparison(models_eval: Dict[str, Dict[str, float]], 
+                            models_base: Dict[str, Dict[str, float]], 
+                            out_path: str) -> None:
+    """Create heatmap showing score differences (Pxplore - Baseline)
+    
+    热力
+  
+    """
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+    
+    
+    dimensions = ["IIA", "OPC", "AU", "IE", "Avg"]
+    model_order = ["Human", "GPT-4o", "Claude-3.7-Sonnet", "Deepseek-R1"]
+    
+    # Calculate differences
+    diff_matrix = []
+    for model in model_order:
+        row = []
+        for dim in dimensions:
+            # 处理Overall到Avg的映射
+            actual_dim = "Overall" if dim == "Avg" else dim
+            diff = models_eval[model][actual_dim] - models_base[model][actual_dim]
+            row.append(diff)
+        diff_matrix.append(row)
+    
+    diff_matrix = np.array(diff_matrix)
+    
+   
+    # 红色(负值) -> 浅色(接近0) -> 蓝色(正值)
+    colors_list = [
+        '#C72324',  # 深红（负值）
+        '#FEA983',  # 浅橙（接近0负）
+        '#FFFFFF',  # 白色（0）
+        '#9AC9DB',  # 浅蓝（接近0正）
+        '#2978B5',  # 深蓝（正值）
+    ]
+    n_bins = 100
+    cmap = LinearSegmentedColormap.from_list('custom', colors_list, N=n_bins)
+    
+    fig, ax = plt.subplots(figsize=(8, 3.5))
+    
+    # Create heatmap
+    im = ax.imshow(diff_matrix, cmap=cmap, aspect='auto', vmin=-0.5, vmax=0.5)
+    
+    # Set ticks
+    ax.set_xticks(np.arange(len(dimensions)))
+    ax.set_yticks(np.arange(len(model_order)))
+    ax.set_xticklabels(dimensions, fontsize=14)
+    # Use wrapped label for Claude to move "-Sonnet" to next line
+    display_model_labels = [
+        (m.replace("-Sonnet", "\n-Sonnet") if m == "Claude-3.7-Sonnet" else (m.replace("-R1", "\n-R1") if m == "Deepseek-R1" else m))
+        for m in model_order
+    ]
+    ax.set_yticklabels(display_model_labels, fontsize=12)
+    
+    # Add colorbar
+    cbar = plt.colorbar(im, ax=ax)
+    # cbar.set_label('Score Improvement (Pxplore - Baseline)', rotation=270, labelpad=25, fontsize=14)
+    
+    # Add text annotations with adaptive color
+    for i in range(len(model_order)):
+        for j in range(len(dimensions)):
+            value = diff_matrix[i, j]
+            # 根据背景颜色选择文字颜色
+            text_color = 'white' if abs(value) > 0.25 else 'black'
+            text = ax.text(j, i, f'{value:.2f}',
+                          ha="center", va="center", color=text_color, 
+                          fontsize=13, fontweight='bold')
+    
+    ax.set_title('Score Improvement (Pxplore - Baseline)', fontsize=14, fontweight='bold', pad=20)
+    fig.tight_layout()
+    fig.savefig(out_path, format='pdf', bbox_inches='tight')
+    plt.close(fig)
+
+
 def main():
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     eval_path = os.path.join(repo_root, "service", "scripts", "buffer", "eval_profile.json")
@@ -389,9 +467,14 @@ def main():
     # Print detailed scores table
     print_detailed_scores_table(models_eval, models_base)
     
-    out_pdf = os.path.join(repo_root, "service", "scripts", "evaluation", "result_profile.pdf")
-    make_grouped_bar_single_panel_with_baseline(models_eval, models_base, DIMENSIONS, out_pdf)
-    print(f"Saved bar chart to: {out_pdf}")
+    # out_pdf = os.path.join(repo_root, "service", "scripts", "evaluation", "result_profile.pdf")
+    # make_grouped_bar_single_panel_with_baseline(models_eval, models_base, DIMENSIONS, out_pdf)
+    # print(f"Saved bar chart to: {out_pdf}")
+    
+    # Heatmap (热力图)
+    out_heatmap = os.path.join(repo_root, "service", "scripts", "evaluation", "result_profile.pdf")
+    make_heatmap_comparison(models_eval, models_base, out_heatmap)
+    print(f"Saved heatmap to: {out_heatmap}")
 
 
 if __name__ == "__main__":

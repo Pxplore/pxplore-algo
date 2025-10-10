@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 BASE_DIR = Path(__file__).parent
 
-prompt_text = open(BASE_DIR / "eval_profile.txt", "r", encoding="utf-8").read()
+prompt_text = open(BASE_DIR / "../prompts/eval_profile.txt", "r", encoding="utf-8").read()
 result_profiling = json.load(open(BASE_DIR / ".." / "buffer" / "result_student_profiling.json", "r", encoding="utf-8"))
 
 results = []
